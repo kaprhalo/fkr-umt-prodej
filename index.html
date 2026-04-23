@@ -32,14 +32,13 @@
         .scroll-container { width: 100vw; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 0; }
         .main-layout { display: inline-grid; grid-template-columns: 35px 1100px 35px; grid-template-rows: 25px 647px 25px; margin: 0 auto; position: relative; }
         .col-labels { display: grid; grid-template-columns: repeat(34, 1fr); font-size: 9px; font-weight: bold; color: #888; align-items: center; }
-        .row-labels-left { position: sticky; left: 0; z-index: 60; background: #121212; display: grid; grid-template-rows: repeat(20, 1fr); font-size: 10px; font-weight: bold; color: #888; align-items: center; }
-        .row-labels-right { display: grid; grid-template-rows: repeat(20, 1fr); font-size: 10px; font-weight: bold; color: #888; align-items: center; }
+        .row-labels-left, .row-labels-right { display: grid; grid-template-rows: repeat(20, 1fr); font-size: 10px; font-weight: bold; color: #888; align-items: center; }
+        .row-labels-left { position: sticky; left: 0; z-index: 60; background: #121212; }
 
         .pitch-wrapper { position: relative; background: var(--pitch-green); border: 2px solid white; width: 100%; height: 100%; box-sizing: border-box; }
         .grid-container { display: grid; grid-template-columns: repeat(34, 1fr); grid-template-rows: repeat(20, 1fr); width: 100%; height: 100%; }
 
         .square { border: 0.1px solid rgba(255,255,255,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; transition: 0.1s; }
-        
         .premium-spot { grid-column: span 2; grid-row: span 2; background: var(--premium-blue) !important; color: black !important; font-size: 11px !important; z-index: 20; position: relative; }
         .premium-spot.center-50k { font-size: 13px !important; border: 2px solid gold !important; }
 
@@ -71,26 +70,33 @@
         .sponsor-label.text-mode { background: var(--sold-red); color: white; }
         .sponsor-label img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        #custom-dialog { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; }
+        #custom-dialog, #payment-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; }
         .dialog-content { background: #222; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .dialog-content h2 { margin-top: 0; font-size: 1.2rem; color: var(--gold); }
-        .dialog-content input[type="text"] { width: 100%; padding: 12px; margin: 15px 0; border-radius: 5px; border: 1px solid #444; background: #111; color: white; box-sizing: border-box; font-size: 1rem; }
-        .dialog-btns { display: flex; flex-direction: column; gap: 10px; }
-        .btn-main { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .dialog-content h2 { margin-top: 0; color: var(--gold); font-size: 1.2rem; }
+        
+        .input-as-btn { 
+            width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #444; 
+            background: #111; color: white; box-sizing: border-box; font-size: 1rem; text-align: center;
+        }
+
+        #qr-wrap { background: white; padding: 10px; border-radius: 10px; display: inline-block; margin: 15px 0; }
+        #qr-img { width: 200px; height: 200px; display: block; }
+        .payment-info { background: #333; padding: 12px; border-radius: 8px; font-size: 0.85rem; text-align: left; margin: 10px 0; border: 1px solid #444; }
+        .payment-info b { color: var(--gold); }
+
+        .btn-main { width: 100%; padding: 12px; margin-bottom: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .btn-gold { background: var(--gold); color: black; }
-        .btn-upload { background: #444; color: white; }
-        .btn-cancel { background: transparent; color: #888; font-size: 0.9rem; margin-top: 5px; }
+        .btn-cancel { background: transparent; color: #888; cursor: pointer; padding: 10px; font-size: 0.9rem; }
 
         .footer-admin { margin: 40px auto; padding: 20px; width: 90%; max-width: 500px; background: #1a1a1a; border-radius: 15px; border: 1px solid #333; font-size: 0.8rem; color: #888; }
-        .admin-link { display: inline-block; margin-top: 10px; padding: 12px 20px; background: #333; color: var(--gold); text-decoration: none; border-radius: 8px; font-weight: bold; border: 1px solid #444; transition: 0.2s; }
-        .admin-link:hover { background: #444; border-color: var(--gold); }
+        .admin-link { display: inline-block; margin-top: 10px; padding: 12px 20px; background: #333; color: var(--gold); text-decoration: none; border-radius: 8px; font-weight: bold; border: 1px solid #444; }
         
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--gold); }
     </style>
 </head>
 <body>
 
-<div id="loading-overlay">Načítám FKŘ Cloud...</div>
+<div id="loading-overlay">Synchronizace s FKŘ Cloudem...</div>
 
 <div class="header-sticky">
     <h1>FKŘ - Sponzorská mapa hřiště</h1>
@@ -99,7 +105,7 @@
         <div>Vybráno: <span id="money-raised">0</span> Kč</div>
         <div>Výběr: <span id="sel-price" class="sel-text">0</span> Kč</div>
     </div>
-    <button id="confirm-btn" class="btn-confirm" onclick="openDialog()">PŘIŘADIT SPONZORA</button>
+    <button id="confirm-btn" class="btn-confirm" onclick="openSponsorModal()">PŘIŘADIT SPONZORA</button>
 </div>
 
 <div class="scroll-container">
@@ -122,20 +128,30 @@
 
 <div class="footer-admin">
     <div style="font-weight: bold; margin-bottom: 5px;">Sekce pro správce FKŘ</div>
-    <div style="font-size: 0.75rem; margin-bottom: 10px;">Zde můžete v reálném čase editovat tabulku sponzorů.</div>
     <a href="https://docs.google.com/spreadsheets/d/1S93o-yrPx5ie-LiNmWyXo2B03CrpsfnbcjI-c-OjIEw/edit?usp=sharing" target="_blank" class="admin-link">OTEVŘÍT GOOGLE TABULKU</a>
-    <div style="margin-top: 15px; font-size: 0.7rem;">Stav spojení: <span id="cloud-status" style="color: #4caf50;">Synchronizováno</span></div>
 </div>
 
 <div id="custom-dialog">
     <div class="dialog-content">
-        <h2>Přiřadit sponzora</h2>
-        <input type="text" id="sponsor-name-input" placeholder="Jméno sponzora...">
-        <div class="dialog-btns">
-            <button class="btn-main btn-gold" onclick="confirmTextSponsor()">POTVRDIT TEXT</button>
-            <button class="btn-main btn-upload" onclick="triggerFileInput()">PŘIDAT LOGO (S JMÉNEM)</button>
-            <button class="btn-cancel" onclick="closeDialog()">Zrušit</button>
+        <h2>Údaje sponzora</h2>
+        <input type="text" id="sponsor-name-input" class="input-as-btn" placeholder="Zadejte jméno sponzora...">
+        <button class="btn-main btn-gold" onclick="proceedToPayment()">POKRAČOVAT K PLATBĚ</button>
+        <button class="btn-main" style="background:#444; color:white" onclick="triggerFileInput()">NAHRÁT LOGO (NEPOVINNÉ)</button>
+        <div class="btn-cancel" onclick="closeModals()">Zrušit</div>
+    </div>
+</div>
+
+<div id="payment-modal">
+    <div class="dialog-content">
+        <h2 style="color:var(--gold)">Platební údaje</h2>
+        <div id="qr-wrap"><img id="qr-img" src="" alt="Generuji QR..."></div>
+        <div class="payment-info">
+            Částka: <b id="pay-amount">--</b> Kč<br>
+            Účet: <b id="pay-acc">--</b><br>
+            Zpráva: <b id="pay-msg">--</b>
         </div>
+        <button class="btn-main btn-gold" onclick="finalizeAll()">MÁM ZAPLACENO, ODESLAT</button>
+        <div class="btn-cancel" onclick="closeModals()">Zpět</div>
     </div>
 </div>
 
@@ -143,82 +159,52 @@
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyTBG97NqszYexIfjy7wW2ssF3sGZSe1iSdIfq5uHOcRlZERFb8IHywFsAlLFi8qRG/exec";
+    const ACCOUNT = "123456789/0000"; // ZDE ÚČET
     const grid = document.getElementById('pitch');
     const overlayContainer = document.getElementById('sponsor-overlays');
     const confirmBtn = document.getElementById('confirm-btn');
     const logoInput = document.getElementById('logo-input');
-    const dialog = document.getElementById('custom-dialog');
     const nameInput = document.getElementById('sponsor-name-input');
     const loadingOverlay = document.getElementById('loading-overlay');
-    const cloudStatus = document.getElementById('cloud-status');
     const COLS = 34, ROWS = 20;
 
     let selectedIds = [];
     let soldGroups = [];
-
-    async function syncToCloud(action, data = null) {
-        try {
-            await fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: action, data: data, id: data ? data.id : null })
-            });
-            cloudStatus.innerText = "Synchronizováno";
-            cloudStatus.style.color = "#4caf50";
-        } catch (e) { 
-            cloudStatus.innerText = "Chyba spojení";
-            cloudStatus.style.color = "#f44336";
-        }
-    }
+    let currentImgData = null;
 
     async function loadFromCloud() {
         try {
-            const response = await fetch(SCRIPT_URL);
-            const data = await response.json();
-            if (data && Array.isArray(data)) {
-                soldGroups = data;
-                renderAllSold();
-            }
-        } catch (e) { 
-            const local = localStorage.getItem('fkr_pitch_map_data');
-            if (local) { soldGroups = JSON.parse(local); renderAllSold(); }
-        } finally {
-            loadingOverlay.style.display = 'none';
-        }
+            const res = await fetch(SCRIPT_URL);
+            const data = await res.json();
+            if (data && Array.isArray(data)) { soldGroups = data; renderAllSold(); }
+        } catch (e) { console.error(e); }
+        finally { loadingOverlay.style.display = 'none'; }
     }
 
     function renderAllSold() {
         overlayContainer.innerHTML = "";
-        soldGroups.forEach(group => {
-            renderGroup(group);
-            group.ids.forEach(id => {
-                const el = document.getElementById(id);
-                if(el) { el.classList.add('sold-hide'); el.style.visibility = 'hidden'; }
-            });
+        soldGroups.forEach(g => {
+            renderGroup(g);
+            g.ids.forEach(id => { const el = document.getElementById(id); if(el) { el.classList.add('sold-hide'); el.style.visibility = 'hidden'; }});
         });
         updateStats();
     }
 
     function getColLetter(n) { let letter = ""; while (n > 0) { let temp = (n - 1) % 26; letter = String.fromCharCode(65 + temp) + letter; n = Math.floor((n - temp) / 26); } return letter; }
-    const colTop = document.getElementById('col-labels-top');
-    const colBottom = document.getElementById('col-labels-bottom');
     for (let c = 1; c <= COLS; c++) { 
         const txt = getColLetter(c);
-        const d1 = document.createElement('div'); d1.innerText = txt; colTop.appendChild(d1);
-        const d2 = document.createElement('div'); d2.innerText = txt; colBottom.appendChild(d2);
+        document.getElementById('col-labels-top').appendChild(Object.assign(document.createElement('div'), {innerText: txt}));
+        document.getElementById('col-labels-bottom').appendChild(Object.assign(document.createElement('div'), {innerText: txt}));
     }
-    const rowLeft = document.getElementById('row-labels-left');
-    const rowRight = document.getElementById('row-labels-right');
     for (let r = 1; r <= ROWS; r++) { 
-        const d1 = document.createElement('div'); d1.innerText = r; rowLeft.appendChild(d1);
-        const d2 = document.createElement('div'); d2.innerText = r; rowRight.appendChild(d2);
+        document.getElementById('row-labels-left').appendChild(Object.assign(document.createElement('div'), {innerText: r}));
+        document.getElementById('row-labels-right').appendChild(Object.assign(document.createElement('div'), {innerText: r}));
     }
 
     const premiums = [
-        { c: 3, r: 10, id: 'p-pen-l', price: 30000, cls: '' },
+        { c: 3, r: 10, id: 'p-pen-l', price: 30000 },
         { c: 17, r: 10, id: 'p-mid', price: 50000, cls: 'center-50k' },
-        { c: 31, r: 10, id: 'p-pen-r', price: 30000, cls: '' }
+        { c: 31, r: 10, id: 'p-pen-r', price: 30000 }
     ];
 
     for (let r = 1; r <= ROWS; r++) {
@@ -233,9 +219,110 @@
                 sq.onclick = () => toggleSelect(sq); grid.appendChild(sq); continue;
             }
             if (((r === 9 || r === 12) && (c === 8 || c === 28))) continue;
-
             const p = premiums.find(p => p.c === c && p.r === r);
             if (p) {
                 const div = document.createElement('div');
-                div.className = 'square premium-spot ' + p.cls;
+                div.className = 'square premium-spot ' + (p.cls || '');
                 div.id = p.id; div.dataset.price = p.price;
+                div.dataset.row = r; div.dataset.col = c;
+                div.dataset.isPrem = "true"; div.innerText = p.price;
+                div.onclick = () => toggleSelect(div); grid.appendChild(div); continue;
+            }
+            if (premiums.some(p => c >= p.c && c < p.c + 2 && r >= p.r && r < p.r + 2 && !(c === p.c && r === p.r))) continue;
+            const sq = document.createElement('div');
+            sq.className = 'square'; sq.id = `r${r}c${c}`; sq.dataset.row = r; sq.dataset.col = c;
+            const dx = c - 17.5, dy = r - 10.5, dist = Math.sqrt(dx*dx + dy*dy);
+            let price = 1000;
+            if (dist <= 3.2) { price = 3000; sq.classList.add('center-circle-color'); }
+            else if (((c <= 2) || (c >= 33)) && (r >= 8 && r <= 13) || ((r === 1 || r === 20) && (c === 1 || c === 34))) { price = 5000; sq.classList.add('orange-premium-color'); }
+            else if (((c <= 5) || (c >= 30)) && (r >= 5 && r <= 16)) { price = 4000; sq.classList.add('large-box-color'); }
+            else if (r >= 5 && r <= 16 && c >= 6 && c <= 29) { price = 2000; sq.classList.add('grass-darker'); }
+            sq.dataset.price = price; sq.innerText = price;
+            sq.onclick = () => toggleSelect(sq); grid.appendChild(sq);
+        }
+    }
+
+    function toggleSelect(el) {
+        if (el.classList.contains('sold-hide')) return;
+        if (selectedIds.includes(el.id)) { selectedIds = selectedIds.filter(i => i !== el.id); el.classList.remove('selected'); }
+        else { selectedIds.push(el.id); el.classList.add('selected'); }
+        confirmBtn.style.display = selectedIds.length > 0 ? 'block' : 'none';
+        updateStats();
+    }
+
+    function openSponsorModal() { document.getElementById('custom-dialog').style.display = 'flex'; }
+    function closeModals() { document.getElementById('custom-dialog').style.display = 'none'; document.getElementById('payment-modal').style.display = 'none'; }
+    function triggerFileInput() { if (!nameInput.value.trim()) { alert("Zadejte jméno."); return; } logoInput.click(); }
+    
+    logoInput.onchange = e => {
+        const reader = new FileReader();
+        reader.onload = event => { currentImgData = event.target.result; alert("Logo připraveno."); };
+        reader.readAsDataURL(e.target.files[0]);
+    };
+
+    function proceedToPayment() {
+        const name = nameInput.value.trim();
+        if(!name) { alert("Zadejte jméno."); return; }
+        let total = 0;
+        selectedIds.forEach(id => { const el = document.getElementById(id); if(el) total += parseInt(el.dataset.price); });
+        const acc = ACCOUNT.split('/');
+        const rawMsg = `FKR UMT Prodej: ${name}`;
+        const cleanMsg = rawMsg.normalize("NFD").replace(/[\u0300-\u036f]/g, "").substring(0, 20);
+        document.getElementById('pay-amount').innerText = total.toLocaleString();
+        document.getElementById('pay-acc').innerText = ACCOUNT;
+        document.getElementById('pay-msg').innerText = rawMsg;
+        document.getElementById('qr-img').src = `https://api.paylibo.com/paylibo/generator/czech/image?accountNumber=${acc[0]}&bankCode=${acc[1]}&amount=${total}&currency=CZK&message=${encodeURIComponent(cleanMsg)}`;
+        document.getElementById('custom-dialog').style.display = 'none';
+        document.getElementById('payment-modal').style.display = 'flex';
+    }
+
+    async function finalizeAll() {
+        const group = { id: Date.now(), content: nameInput.value.trim(), isImage: !!currentImgData, image: currentImgData, ids: [...selectedIds] };
+        fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "add", data: group }) });
+        soldGroups.push(group);
+        renderGroup(group);
+        selectedIds.forEach(id => { const el = document.getElementById(id); if(el) { el.classList.add('sold-hide'); el.style.visibility = 'hidden'; }});
+        selectedIds = []; confirmBtn.style.display = 'none'; closeModals();
+        alert("Rezervace odeslána!"); updateStats();
+    }
+
+    function renderGroup(g) {
+        const els = g.ids.map(id => document.getElementById(id)).filter(e => e);
+        if(!els.length) return;
+        let r1=21, r2=0, c1=35, c2=0;
+        els.forEach(el => {
+            const r = parseInt(el.dataset.row), c = parseInt(el.dataset.col);
+            let rs = (el.dataset.isPrem ? 2 : 1), cs = (el.id.includes('arc') ? 4 : (el.dataset.isPrem ? 2 : 1));
+            if(r < r1) r1 = r; if(r+rs-1 > r2) r2 = r+rs-1; if(c < c1) c1 = c; if(c+cs-1 > c2) c2 = c+cs-1;
+        });
+        const lbl = document.createElement('div');
+        lbl.className = 'sponsor-label';
+        if(g.isImage && g.image) { const img = document.createElement('img'); img.src = g.image; lbl.appendChild(img); }
+        else { lbl.innerText = g.content; lbl.classList.add('text-mode'); }
+        lbl.style.top = ((r1-1)*5)+"%"; lbl.style.left = ((c1-1)*(100/34))+"%";
+        lbl.style.width = ((c2-c1+1)*(100/34))+"%"; lbl.style.height = ((r2-r1+1)*5)+"%";
+        // Zpět přidaná funkce mazání:
+        lbl.onclick = () => { if(confirm("Smazat " + g.content + " z cloudu?")) removeGroup(g.id); };
+        overlayContainer.appendChild(lbl);
+    }
+
+    function removeGroup(gid) {
+        fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "remove", id: gid }) });
+        const g = soldGroups.find(x => x.id === gid);
+        if(g) { g.ids.forEach(id => { const el = document.getElementById(id); if(el) { el.classList.remove('sold-hide'); el.style.visibility = 'visible'; } }); }
+        soldGroups = soldGroups.filter(x => x.id !== gid);
+        const l = document.getElementById('lbl-' + gid); if(l) l.remove();
+        updateStats();
+    }
+
+    function updateStats() {
+        let money = 0; soldGroups.forEach(g => g.ids.forEach(id => { const el = document.getElementById(id); if(el) money += parseInt(el.dataset.price); }));
+        document.getElementById('sold-count').innerText = soldGroups.length;
+        document.getElementById('money-raised').innerText = money.toLocaleString();
+        let sel = 0; selectedIds.forEach(id => { const el = document.getElementById(id); if(el) sel += parseInt(el.dataset.price); });
+        document.getElementById('sel-price').innerText = sel.toLocaleString();
+    }
+    window.onload = loadFromCloud;
+</script>
+</body>
+</html>
