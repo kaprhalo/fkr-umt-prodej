@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FKŘ - Sponzorská mapa hřiště</title>
+    <style>
+        :root {
+            --pitch-green: #2e7d32;
+            --center-dark-green: #1b431e;
+            --line-white: rgba(255, 255, 255, 0.95);
+            --sold-red: #d32f2f;
+            --gold: #ffd700;
+            --premium-blue: #00e5ff;
+            --premium-orange: #E97132;
+            --large-box-blue: #156082;
+            --selected-yellow: #ffeb3b;
+            --grass-dark-overlay: rgba(0, 0, 0, 0.22);
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #121212; color: white; text-align: center; margin: 0; padding: 0; overflow-x: hidden; }
+        .header-sticky { position: sticky; top: 0; z-index: 100; background: #121212; padding: 10px 5px; border-bottom: 1px solid #333; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        h1 { font-size: 1.1rem; margin: 0; color: #fff; letter-spacing: 0.5px; }
+
+        .stats { background: #222; padding: 8px 12px; border-radius: 8px; display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 8px; border: 1px solid #444; font-size: 0.8rem; }
+        .stats div { border-right: 1px solid #444; padding-right: 8px; }
+        .stats div:last-child { border: none; padding-right: 0; }
+        .stats span { font-weight: bold; color: var(--gold); }
+
+        .btn-confirm { width: 90%; max-width: 400px; padding: 12px; background: var(--gold); color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 0.9rem; }
+
+        .scroll-container { width: 100vw; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 0; }
+        .main-layout { display: inline-grid; grid-template-columns: 35px 1100px 35px; grid-template-rows: 25px 647px 25px; margin: 0 auto; position: relative; }
+        .col-labels { display: grid; grid-template-columns: repeat(34, 1fr); font-size: 9px; font-weight: bold; color: #888; align-items: center; }
+        .row-labels-left { position: sticky; left: 0; z-index: 60; background: #121212; display: grid; grid-template-rows: repeat(20, 1fr); font-size: 10px; font-weight: bold; color: #888; align-items: center; }
+        .row-labels-right { display: grid; grid-template-rows: repeat(20, 1fr); font-size: 10px; font-weight: bold; color: #888; align-items: center; }
+
+        .pitch-wrapper { position: relative; background: var(--pitch-green); border: 2px solid white; width: 100%; height: 100%; box-sizing: border-box; }
+        .grid-container { display: grid; grid-template-columns: repeat(34, 1fr); grid-template-rows: repeat(20, 1fr); width: 100%; height: 100%; }
+
+        .square { border: 0.1px solid rgba(255,255,255,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; transition: 0.1s; }
+        
+        .premium-spot { grid-column: span 2; grid-row: span 2; background: var(--premium-blue) !important; color: black !important; font-size: 11px !important; z-index: 20; position: relative; }
+        .premium-spot.center-50k { font-size: 13px !important; border: 2px solid gold !important; }
+
+        .center-circle-color { background-color: var(--center-dark-green) !important; }
+        .grass-darker { background-color: var(--grass-dark-overlay) !important; }
+        .large-box-color { background-color: var(--large-box-blue) !important; }
+        .orange-premium-color { background-color: var(--premium-orange) !important; }
+        .square.selected, .penalty-arc.selected { background-color: var(--selected-yellow) !important; color: black !important; z-index: 35; }
+
+        .marking { position: absolute; border: 2px solid var(--line-white); pointer-events: none; z-index: 10; box-sizing: border-box; }
+        .center-line { top: 0; bottom: 0; left: 50%; width: 2px; background: var(--line-white); transform: translateX(-50%); border:none; }
+        .penalty-l { top: 20%; left: 0; width: 14.7%; height: 60%; border-left: none; } 
+        .penalty-r { top: 20%; right: 0; width: 14.7%; height: 60%; border-right: none; }
+        .goal-l { top: 35%; left: 0; width: 5.8%; height: 30%; border-left: none; }
+        .goal-r { top: 35%; right: 0; width: 5.8%; height: 30%; border-right: none; }
+
+        .penalty-arc {
+            position: absolute; top: 40%; width: 11.76%; height: 20%; z-index: 15;
+            border-radius: 50%; border: 2px solid var(--line-white);
+            background-color: var(--large-box-blue);
+            cursor: pointer; display: flex; align-items: center; font-weight: bold; 
+            font-size: 12px; box-sizing: border-box;
+        }
+        .penalty-arc-l { left: 8.82%; border-left: none; clip-path: inset(0 0 0 50%); justify-content: flex-end; padding-right: 15px; }
+        .penalty-arc-r { right: 8.82%; border-right: none; clip-path: inset(0 50% 0 0); justify-content: flex-start; padding-left: 15px; }
+
+        #sponsor-overlays { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+        .sponsor-label { position: absolute; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; pointer-events: auto; border-radius: 2px; overflow: hidden; }
+        .sponsor-label.text-mode { background: var(--sold-red); color: white; }
+        .sponsor-label img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        #custom-dialog { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; }
+        .dialog-content { background: #222; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .dialog-content h2 { margin-top: 0; font-size: 1.2rem; color: var(--gold); }
+        .dialog-content input[type="text"] { width: 100%; padding: 12px; margin: 15px 0; border-radius: 5px; border: 1px solid #444; background: #111; color: white; box-sizing: border-box; font-size: 1rem; }
+        .dialog-btns { display: flex; flex-direction: column; gap: 10px; }
+        .btn-main { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .btn-gold { background: var(--gold); color: black; }
+        .btn-upload { background: #444; color: white; }
+        .btn-cancel { background: transparent; color: #888; font-size: 0.9rem; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="header-sticky">
+    <h1>FKŘ - Sponzorská mapa hřiště</h1>
+    <div class="stats">
+        <div>Prodáno: <span id="sold-count">0</span></div>
+        <div>Vybráno: <span id="money-raised">0</span> Kč</div>
+        <div>Výběr: <span id="sel-price" class="sel-text">0</span> Kč</div>
+    </div>
+    <button id="confirm-btn" class="btn-confirm" onclick="openDialog()">PŘIŘADIT SPONZORA</button>
+</div>
+
+<div class="scroll-container">
+    <div class="main-layout">
+        <div class="corner"></div><div id="col-labels-top" class="col-labels"></div><div class="corner"></div>
+        <div id="row-labels-left" class="row-labels-left"></div>
+        <div class="pitch-wrapper">
+            <div class="marking center-line"></div>
+            <div class="marking penalty-l"></div><div class="marking penalty-r"></div>
+            <div class="marking goal-l"></div><div class="marking goal-r"></div>
+            <div id="arc-l" class="penalty-arc penalty-arc-l" data-price="15000" data-row="9" data-col="6" data-is-arc="true" onclick="toggleSelect(this)">15000</div>
+            <div id="arc-r" class="penalty-arc penalty-arc-r" data-price="15000" data-row="9" data-col="28" data-is-arc="true" onclick="toggleSelect(this)">15000</div>
+            <div class="grid-container" id="pitch"></div>
+            <div id="sponsor-overlays"></div>
+        </div>
+        <div id="row-labels-right" class="row-labels-right"></div>
+        <div class="corner"></div><div id="col-labels-bottom" class="col-labels"></div><div class="corner"></div>
+    </div>
+</div>
+
+<div id="custom-dialog">
+    <div class="dialog-content">
+        <h2>Přiřadit sponzora</h2>
+        <input type="text" id="sponsor-name-input" placeholder="Zadejte jméno sponzora...">
+        <div class="dialog-btns">
+            <button class="btn-main btn-gold" onclick="confirmTextSponsor()">POTVRDIT JMÉNO</button>
+            <button class="btn-main btn-upload" onclick="triggerFileInput()">NEBO NAHRÁT LOGO</button>
+            <button class="btn-cancel" onclick="closeDialog()">Zrušit</button>
+        </div>
+    </div>
+</div>
+
+<input type="file" id="logo-input" accept="image/*" style="display:none">
+
+<script>
+    const grid = document.getElementById('pitch');
+    const overlayContainer = document.getElementById('sponsor-overlays');
+    const confirmBtn = document.getElementById('confirm-btn');
+    const logoInput = document.getElementById('logo-input');
+    const dialog = document.getElementById('custom-dialog');
+    const nameInput = document.getElementById('sponsor-name-input');
+    const COLS = 34, ROWS = 20;
+
+    let selectedIds = [];
+    let soldGroups = [];
+
+    function getColLetter(n) { let letter = ""; while (n > 0) { let temp = (n - 1) % 26; letter = String.fromCharCode(65 + temp) + letter; n = Math.floor((n - temp) / 26); } return letter; }
+    const colTop = document.getElementById('col-labels-top');
+    const colBottom = document.getElementById('col-labels-bottom');
+    for (let c = 1; c <= COLS; c++) { 
+        const txt = getColLetter(c);
+        const d1 = document.createElement('div'); d1.innerText = txt; colTop.appendChild(d1);
+        const d2 = document.createElement('div'); d2.innerText = txt; colBottom.appendChild(d2);
+    }
+    const rowLeft = document.getElementById('row-labels-left');
+    const rowRight = document.getElementById('row-labels-right');
+    for (let r = 1; r <= ROWS; r++) { 
+        const d1 = document.createElement('div'); d1.innerText = r; rowLeft.appendChild(d1);
+        const d2 = document.createElement('div'); d2.innerText = r; rowRight.appendChild(d2);
+    }
+
+    const premiums = [
+        { c: 3, r: 10, id: 'p-pen-l', price: 30000, cls: '' },    // Penalty vlevo (C-D)
+        { c: 17, r: 10, id: 'p-mid', price: 50000, cls: 'center-50k' }, // Střed (Q-R)
+        { c: 31, r: 10, id: 'p-pen-r', price: 30000, cls: '' }   // Penalty vpravo (AE-AF)
+    ];
+
+    for (let r = 1; r <= ROWS; r++) {
+        for (let c = 1; c <= COLS; c++) {
+            const isMergedL = (r === 9 || r === 12) && c === 7;
+            const isMergedR = (r === 9 || r === 12) && c === 27;
+            if (isMergedL || isMergedR) {
+                const sq = document.createElement('div');
+                sq.className = 'square grass-darker'; sq.style.gridColumn = 'span 2';
+                sq.id = `r${r}c${c}-merged`; sq.dataset.row = r; sq.dataset.col = c;
+                sq.dataset.price = 2000; sq.dataset.spanC = 2; sq.innerText = "2000";
+                sq.onclick = () => toggleSelect(sq); grid.appendChild(sq); continue;
+            }
+            if (((r === 9 || r === 12) && (c === 8 || c === 28))) continue;
+
+            const p = premiums.find(p => p.c === c && p.r === r);
+            if (p) {
+                const div = document.createElement('div');
+                div.className = 'square premium-spot ' + p.cls;
+                div.id = p.id; div.dataset.price = p.price;
+                div.dataset.row = r; div.dataset.col = c;
+                div.dataset.isPrem = "true"; div.innerText = p.price;
+                div.onclick = () => toggleSelect(div); grid.appendChild(div); continue;
+            }
+            if (premiums.some(p => c >= p.c && c < p.c + 2 && r >= p.r && r < p.r + 2 && !(c === p.c && r === p.r))) continue;
+
+            const sq = document.createElement('div');
+            sq.className = 'square'; sq.id = `r${r}c${c}`; sq.dataset.row = r; sq.dataset.col = c;
+            const dx = c - 17.5, dy = r - 10.5, dist = Math.sqrt(dx*dx + dy*dy);
+            const isInsideCenter = dist <= 3.2;
+
+            let price = 1000;
+            const isCorner = (r === 1 || r === 20) && (c === 1 || c === 34);
+            const isSmallVapno = ((c <= 2) || (c >= 33)) && (r >= 8 && r <= 13);
+            const isLargeVapno = ((c <= 5) || (c >= 30)) && (r >= 5 && r <= 16);
+            const isStrip = (r >= 5 && r <= 16 && c >= 6 && c <= 29);
+            if (isInsideCenter) { price = 3000; sq.classList.add('center-circle-color'); }
+            else if (isSmallVapno || isCorner) { price = 5000; sq.classList.add('orange-premium-color'); }
+            else if (isLargeVapno) { price = 4000; sq.classList.add('large-box-color'); }
+            else if (isStrip) { price = 2000; sq.classList.add('grass-darker'); }
+            sq.dataset.price = price; sq.innerText = price;
+            sq.onclick = () => toggleSelect(sq); grid.appendChild(sq);
+        }
+    }
+
+    function toggleSelect(el) {
+        if (el.classList.contains('sold-hide')) return;
+        if (selectedIds.includes(el.id)) { selectedIds = selectedIds.filter(i => i !== el.id); el.classList.remove('selected'); }
+        else { selectedIds.push(el.id); el.classList.add('selected'); }
+        confirmBtn.style.display = selectedIds.length > 0 ? 'block' : 'none';
+        updateStats();
+    }
+
+    function openDialog() { dialog.style.display = 'flex'; nameInput.focus(); }
+    function closeDialog() { dialog.style.display = 'none'; nameInput.value = ""; }
+    function triggerFileInput() { logoInput.click(); }
+    function confirmTextSponsor() {
+        const name = nameInput.value.trim();
+        if(!name) { alert("Zadejte jméno."); return; }
+        finalizeAssign(name, false); closeDialog();
+    }
+    logoInput.onchange = e => {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = event => { finalizeAssign(event.target.result, true); closeDialog(); };
+        reader.readAsDataURL(file); logoInput.value = ""; 
+    };
+
+    function finalizeAssign(content, isImage) {
+        const group = { id: Date.now(), content: content, isImage: isImage, ids: [...selectedIds] };
+        soldGroups.push(group);
+        renderGroup(group);
+        selectedIds.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) { el.classList.add('sold-hide'); el.classList.remove('selected'); el.style.visibility = 'hidden'; }
+        });
+        selectedIds = []; confirmBtn.style.display = 'none'; updateStats();
+    }
+
+    function renderGroup(group) {
+        const els = group.ids.map(id => document.getElementById(id)).filter(el => el !== null);
+        let r1 = 21, r2 = 0, c1 = 35, c2 = 0;
+        els.forEach(el => {
+            const r = parseInt(el.dataset.row), c = parseInt(el.dataset.col);
+            let rSpan = 1, cSpan = parseInt(el.dataset.spanC || 1);
+            if (el.dataset.isPrem) { rSpan = 2; cSpan = 2; }
+            if (el.dataset.isArc) { rSpan = 4; cSpan = 2; } 
+            if (r < r1) r1 = r; if (r + rSpan - 1 > r2) r2 = r + rSpan - 1;
+            if (c < c1) c1 = c; if (c + cSpan - 1 > c2) c2 = c + cSpan - 1;
+        });
+        const lbl = document.createElement('div');
+        lbl.className = 'sponsor-label'; lbl.id = 'lbl-' + group.id; 
+        if (group.isImage) {
+            const img = document.createElement('img'); img.src = group.content; lbl.appendChild(img);
+        } else {
+            lbl.innerText = group.content; lbl.classList.add('text-mode');
+            lbl.style.fontSize = Math.min(25, Math.max(10, 8 + (els.length) / 1.5)) + "px";
+        }
+        lbl.style.top = ((r1 - 1) * 5) + "%"; lbl.style.left = ((c1 - 1) * (100 / 34)) + "%";
+        lbl.style.width = ((c2 - c1 + 1) * (100 / 34)) + "%"; lbl.style.height = ((r2 - r1 + 1) * 5) + "%";
+        lbl.onclick = () => { if(confirm("Smazat?")) removeGroup(group.id); };
+        overlayContainer.appendChild(lbl);
+    }
+
+    function removeGroup(gid) {
+        const g = soldGroups.find(x => x.id === gid);
+        if(!g) return;
+        g.ids.forEach(id => { const el = document.getElementById(id); if(el) { el.classList.remove('sold-hide'); el.style.visibility = 'visible'; } });
+        soldGroups = soldGroups.filter(x => x.id !== gid);
+        const l = document.getElementById('lbl-' + gid); if(l) l.remove();
+        updateStats();
+    }
+
+    function updateStats() {
+        let sMoney = 0, sCount = 0;
+        soldGroups.forEach(g => g.ids.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) { 
+                sMoney += parseInt(el.dataset.price); 
+                sCount += (el.dataset.isPrem ? 4 : (el.dataset.isArc ? 8 : 1)); 
+            }
+        }));
+        document.getElementById('sold-count').innerText = sCount;
+        document.getElementById('money-raised').innerText = sMoney.toLocaleString();
+        let selMoney = 0;
+        selectedIds.forEach(id => {
+            const el = document.getElementById(id); if(el) selMoney += parseInt(el.dataset.price);
+        });
+        document.getElementById('sel-price').innerText = selMoney.toLocaleString();
+    }
+</script>
+</body>
+</html>
