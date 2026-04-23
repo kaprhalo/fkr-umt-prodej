@@ -80,6 +80,10 @@
         .btn-gold { background: var(--gold); color: black; }
         .btn-upload { background: #444; color: white; }
         .btn-cancel { background: transparent; color: #888; font-size: 0.9rem; margin-top: 5px; }
+
+        .footer-admin { margin: 40px auto; padding: 20px; width: 90%; max-width: 500px; background: #1a1a1a; border-radius: 15px; border: 1px solid #333; font-size: 0.8rem; color: #888; }
+        .admin-link { display: inline-block; margin-top: 10px; padding: 12px 20px; background: #333; color: var(--gold); text-decoration: none; border-radius: 8px; font-weight: bold; border: 1px solid #444; transition: 0.2s; }
+        .admin-link:hover { background: #444; border-color: var(--gold); }
         
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--gold); }
     </style>
@@ -116,6 +120,13 @@
     </div>
 </div>
 
+<div class="footer-admin">
+    <div style="font-weight: bold; margin-bottom: 5px;">Sekce pro správce FKŘ</div>
+    <div style="font-size: 0.75rem; margin-bottom: 10px;">Zde můžete v reálném čase editovat tabulku sponzorů.</div>
+    <a href="https://docs.google.com/spreadsheets/d/1S93o-yrPx5ie-LiNmWyXo2B03CrpsfnbcjI-c-OjIEw/edit?usp=sharing" target="_blank" class="admin-link">OTEVŘÍT GOOGLE TABULKU</a>
+    <div style="margin-top: 15px; font-size: 0.7rem;">Stav spojení: <span id="cloud-status" style="color: #4caf50;">Synchronizováno</span></div>
+</div>
+
 <div id="custom-dialog">
     <div class="dialog-content">
         <h2>Přiřadit sponzora</h2>
@@ -139,13 +150,12 @@
     const dialog = document.getElementById('custom-dialog');
     const nameInput = document.getElementById('sponsor-name-input');
     const loadingOverlay = document.getElementById('loading-overlay');
+    const cloudStatus = document.getElementById('cloud-status');
     const COLS = 34, ROWS = 20;
 
     let selectedIds = [];
     let soldGroups = [];
-    let tempImageData = null;
 
-    // --- CLOUD FUNKCE ---
     async function syncToCloud(action, data = null) {
         try {
             await fetch(SCRIPT_URL, {
@@ -154,7 +164,12 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: action, data: data, id: data ? data.id : null })
             });
-        } catch (e) { console.error("Cloud error", e); }
+            cloudStatus.innerText = "Synchronizováno";
+            cloudStatus.style.color = "#4caf50";
+        } catch (e) { 
+            cloudStatus.innerText = "Chyba spojení";
+            cloudStatus.style.color = "#f44336";
+        }
     }
 
     async function loadFromCloud() {
@@ -166,7 +181,6 @@
                 renderAllSold();
             }
         } catch (e) { 
-            console.error("Load failed", e);
             const local = localStorage.getItem('fkr_pitch_map_data');
             if (local) { soldGroups = JSON.parse(local); renderAllSold(); }
         } finally {
@@ -186,7 +200,6 @@
         updateStats();
     }
 
-    // --- GRID GENERATION ---
     function getColLetter(n) { let letter = ""; while (n > 0) { let temp = (n - 1) % 26; letter = String.fromCharCode(65 + temp) + letter; n = Math.floor((n - temp) / 26); } return letter; }
     const colTop = document.getElementById('col-labels-top');
     const colBottom = document.getElementById('col-labels-bottom');
@@ -226,151 +239,3 @@
                 const div = document.createElement('div');
                 div.className = 'square premium-spot ' + p.cls;
                 div.id = p.id; div.dataset.price = p.price;
-                div.dataset.row = r; div.dataset.col = c;
-                div.dataset.isPrem = "true"; div.innerText = p.price;
-                div.onclick = () => toggleSelect(div); grid.appendChild(div); continue;
-            }
-            if (premiums.some(p => c >= p.c && c < p.c + 2 && r >= p.r && r < p.r + 2 && !(c === p.c && r === p.r))) continue;
-
-            const sq = document.createElement('div');
-            sq.className = 'square'; sq.id = `r${r}c${c}`; sq.dataset.row = r; sq.dataset.col = c;
-            const dx = c - 17.5, dy = r - 10.5, dist = Math.sqrt(dx*dx + dy*dy);
-            const isInsideCenter = dist <= 3.2;
-
-            let price = 1000;
-            const isCorner = (r === 1 || r === 20) && (c === 1 || c === 34);
-            const isSmallVapno = ((c <= 2) || (c >= 33)) && (r >= 8 && r <= 13);
-            const isLargeVapno = ((c <= 5) || (c >= 30)) && (r >= 5 && r <= 16);
-            const isStrip = (r >= 5 && r <= 16 && c >= 6 && c <= 29);
-            if (isInsideCenter) { price = 3000; sq.classList.add('center-circle-color'); }
-            else if (isSmallVapno || isCorner) { price = 5000; sq.classList.add('orange-premium-color'); }
-            else if (isLargeVapno) { price = 4000; sq.classList.add('large-box-color'); }
-            else if (isStrip) { price = 2000; sq.classList.add('grass-darker'); }
-            sq.dataset.price = price; sq.innerText = price;
-            sq.onclick = () => toggleSelect(sq); grid.appendChild(sq);
-        }
-    }
-
-    // --- ACTIONS ---
-    function toggleSelect(el) {
-        if (el.classList.contains('sold-hide')) return;
-        if (selectedIds.includes(el.id)) { selectedIds = selectedIds.filter(i => i !== el.id); el.classList.remove('selected'); }
-        else { selectedIds.push(el.id); el.classList.add('selected'); }
-        confirmBtn.style.display = selectedIds.length > 0 ? 'block' : 'none';
-        updateStats();
-    }
-
-    function openDialog() { dialog.style.display = 'flex'; nameInput.focus(); }
-    function closeDialog() { dialog.style.display = 'none'; nameInput.value = ""; tempImageData = null;}
-    
-    function triggerFileInput() {
-        if (!nameInput.value.trim()) { alert("Nejdříve zadejte jméno sponzora do pole."); return; }
-        logoInput.click();
-    }
-    
-    function confirmTextSponsor() {
-        const name = nameInput.value.trim();
-        if(!name) { alert("Zadejte jméno."); return; }
-        finalizeAssign(name, false); closeDialog();
-    }
-
-    logoInput.onchange = e => {
-        const file = e.target.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = event => { 
-            const name = nameInput.value.trim();
-            finalizeAssign(name, true, event.target.result); 
-            closeDialog(); 
-        };
-        reader.readAsDataURL(file); logoInput.value = ""; 
-    };
-
-    function finalizeAssign(name, isImage, imgData = null) {
-        // Content je vždy jméno pro Tabulku, image uchovává data
-        const group = { 
-            id: Date.now(), 
-            content: name, 
-            isImage: isImage, 
-            image: imgData, 
-            ids: [...selectedIds] 
-        };
-        
-        soldGroups.push(group);
-        syncToCloud("add", group);
-        localStorage.setItem('fkr_pitch_map_data', JSON.stringify(soldGroups));
-
-        renderGroup(group);
-        selectedIds.forEach(id => {
-            const el = document.getElementById(id);
-            if(el) { el.classList.add('sold-hide'); el.classList.remove('selected'); el.style.visibility = 'hidden'; }
-        });
-        selectedIds = []; confirmBtn.style.display = 'none'; updateStats();
-    }
-
-    function renderGroup(group) {
-        const els = group.ids.map(id => document.getElementById(id)).filter(el => el !== null);
-        if (els.length === 0) return;
-
-        let r1 = 21, r2 = 0, c1 = 35, c2 = 0;
-        els.forEach(el => {
-            const r = parseInt(el.dataset.row), c = parseInt(el.dataset.col);
-            let rSpan = (el.dataset.isPrem ? 2 : 1), cSpan = parseInt(el.dataset.spanC || (el.dataset.isPrem ? 2 : 1));
-            if (el.id === 'arc-l' || el.id === 'arc-r') { rSpan = 4; cSpan = 4; }
-            if (r < r1) r1 = r; if (r + rSpan - 1 > r2) r2 = r + rSpan - 1;
-            if (c < c1) c1 = c; if (c + cSpan - 1 > c2) c2 = c + cSpan - 1;
-        });
-
-        const lbl = document.createElement('div');
-        lbl.className = 'sponsor-label'; lbl.id = 'lbl-' + group.id; 
-        
-        // Pokud je logo, zobraz logo, jinak text (v tabulce je content vždy text)
-        if (group.isImage && group.image) {
-            const img = document.createElement('img'); img.src = group.image; lbl.appendChild(img);
-        } else if (group.isImage && !group.image && group.content.startsWith('data:image')) {
-            // Zpětná kompatibilita pro stará data, kde byl obraz v contentu
-            const img = document.createElement('img'); img.src = group.content; lbl.appendChild(img);
-        } else {
-            lbl.innerText = group.content; lbl.classList.add('text-mode');
-            lbl.style.fontSize = Math.min(25, Math.max(10, 8 + (els.length) / 1.5)) + "px";
-        }
-
-        lbl.style.top = ((r1 - 1) * 5) + "%"; lbl.style.left = ((c1 - 1) * (100 / 34)) + "%";
-        lbl.style.width = ((c2 - c1 + 1) * (100 / 34)) + "%"; lbl.style.height = ((r2 - r1 + 1) * 5) + "%";
-        lbl.onclick = () => { if(confirm("Smazat " + group.content + " z cloudu?")) removeGroup(group.id); };
-        overlayContainer.appendChild(lbl);
-    }
-
-    function removeGroup(gid) {
-        syncToCloud("remove", { id: gid });
-        const g = soldGroups.find(x => x.id === gid);
-        if(g) {
-            g.ids.forEach(id => { const el = document.getElementById(id); if(el) { el.classList.remove('sold-hide'); el.style.visibility = 'visible'; } });
-        }
-        soldGroups = soldGroups.filter(x => x.id !== gid);
-        localStorage.setItem('fkr_pitch_map_data', JSON.stringify(soldGroups));
-        const l = document.getElementById('lbl-' + gid); if(l) l.remove();
-        updateStats();
-    }
-
-    function updateStats() {
-        let sMoney = 0, sCount = 0;
-        soldGroups.forEach(g => g.ids.forEach(id => {
-            const el = document.getElementById(id);
-            if(el) { 
-                sMoney += parseInt(el.dataset.price); 
-                sCount += (el.dataset.isPrem ? 4 : (el.id.includes('arc') ? 8 : 1)); 
-            }
-        }));
-        document.getElementById('sold-count').innerText = sCount;
-        document.getElementById('money-raised').innerText = sMoney.toLocaleString();
-        let selMoney = 0;
-        selectedIds.forEach(id => {
-            const el = document.getElementById(id); if(el) selMoney += parseInt(el.dataset.price);
-        });
-        document.getElementById('sel-price').innerText = selMoney.toLocaleString();
-    }
-
-    window.onload = loadFromCloud;
-</script>
-</body>
-</html>
