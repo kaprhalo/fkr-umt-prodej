@@ -80,9 +80,13 @@
         .btn-gold { background: var(--gold); color: black; }
         .btn-upload { background: #444; color: white; }
         .btn-cancel { background: transparent; color: #888; font-size: 0.9rem; margin-top: 5px; }
+        
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--gold); }
     </style>
 </head>
 <body>
+
+<div id="loading-overlay">Načítám FKŘ Cloud...</div>
 
 <div class="header-sticky">
     <h1>FKŘ - Sponzorská mapa hřiště</h1>
@@ -115,10 +119,10 @@
 <div id="custom-dialog">
     <div class="dialog-content">
         <h2>Přiřadit sponzora</h2>
-        <input type="text" id="sponsor-name-input" placeholder="Zadejte jméno sponzora...">
+        <input type="text" id="sponsor-name-input" placeholder="Jméno sponzora...">
         <div class="dialog-btns">
-            <button class="btn-main btn-gold" onclick="confirmTextSponsor()">POTVRDIT JMÉNO</button>
-            <button class="btn-main btn-upload" onclick="triggerFileInput()">NEBO NAHRÁT LOGO</button>
+            <button class="btn-main btn-gold" onclick="confirmTextSponsor()">POTVRDIT TEXT</button>
+            <button class="btn-main btn-upload" onclick="triggerFileInput()">PŘIDAT LOGO (S JMÉNEM)</button>
             <button class="btn-cancel" onclick="closeDialog()">Zrušit</button>
         </div>
     </div>
@@ -127,17 +131,62 @@
 <input type="file" id="logo-input" accept="image/*" style="display:none">
 
 <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyTBG97NqszYexIfjy7wW2ssF3sGZSe1iSdIfq5uHOcRlZERFb8IHywFsAlLFi8qRG/exec";
     const grid = document.getElementById('pitch');
     const overlayContainer = document.getElementById('sponsor-overlays');
     const confirmBtn = document.getElementById('confirm-btn');
     const logoInput = document.getElementById('logo-input');
     const dialog = document.getElementById('custom-dialog');
     const nameInput = document.getElementById('sponsor-name-input');
+    const loadingOverlay = document.getElementById('loading-overlay');
     const COLS = 34, ROWS = 20;
 
     let selectedIds = [];
     let soldGroups = [];
+    let tempImageData = null;
 
+    // --- CLOUD FUNKCE ---
+    async function syncToCloud(action, data = null) {
+        try {
+            await fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: action, data: data, id: data ? data.id : null })
+            });
+        } catch (e) { console.error("Cloud error", e); }
+    }
+
+    async function loadFromCloud() {
+        try {
+            const response = await fetch(SCRIPT_URL);
+            const data = await response.json();
+            if (data && Array.isArray(data)) {
+                soldGroups = data;
+                renderAllSold();
+            }
+        } catch (e) { 
+            console.error("Load failed", e);
+            const local = localStorage.getItem('fkr_pitch_map_data');
+            if (local) { soldGroups = JSON.parse(local); renderAllSold(); }
+        } finally {
+            loadingOverlay.style.display = 'none';
+        }
+    }
+
+    function renderAllSold() {
+        overlayContainer.innerHTML = "";
+        soldGroups.forEach(group => {
+            renderGroup(group);
+            group.ids.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) { el.classList.add('sold-hide'); el.style.visibility = 'hidden'; }
+            });
+        });
+        updateStats();
+    }
+
+    // --- GRID GENERATION ---
     function getColLetter(n) { let letter = ""; while (n > 0) { let temp = (n - 1) % 26; letter = String.fromCharCode(65 + temp) + letter; n = Math.floor((n - temp) / 26); } return letter; }
     const colTop = document.getElementById('col-labels-top');
     const colBottom = document.getElementById('col-labels-bottom');
@@ -154,9 +203,9 @@
     }
 
     const premiums = [
-        { c: 3, r: 10, id: 'p-pen-l', price: 30000, cls: '' },    // Penalty vlevo (C-D)
-        { c: 17, r: 10, id: 'p-mid', price: 50000, cls: 'center-50k' }, // Střed (Q-R)
-        { c: 31, r: 10, id: 'p-pen-r', price: 30000, cls: '' }   // Penalty vpravo (AE-AF)
+        { c: 3, r: 10, id: 'p-pen-l', price: 30000, cls: '' },
+        { c: 17, r: 10, id: 'p-mid', price: 50000, cls: 'center-50k' },
+        { c: 31, r: 10, id: 'p-pen-r', price: 30000, cls: '' }
     ];
 
     for (let r = 1; r <= ROWS; r++) {
@@ -202,6 +251,7 @@
         }
     }
 
+    // --- ACTIONS ---
     function toggleSelect(el) {
         if (el.classList.contains('sold-hide')) return;
         if (selectedIds.includes(el.id)) { selectedIds = selectedIds.filter(i => i !== el.id); el.classList.remove('selected'); }
@@ -211,23 +261,44 @@
     }
 
     function openDialog() { dialog.style.display = 'flex'; nameInput.focus(); }
-    function closeDialog() { dialog.style.display = 'none'; nameInput.value = ""; }
-    function triggerFileInput() { logoInput.click(); }
+    function closeDialog() { dialog.style.display = 'none'; nameInput.value = ""; tempImageData = null;}
+    
+    function triggerFileInput() {
+        if (!nameInput.value.trim()) { alert("Nejdříve zadejte jméno sponzora do pole."); return; }
+        logoInput.click();
+    }
+    
     function confirmTextSponsor() {
         const name = nameInput.value.trim();
         if(!name) { alert("Zadejte jméno."); return; }
         finalizeAssign(name, false); closeDialog();
     }
+
     logoInput.onchange = e => {
         const file = e.target.files[0]; if (!file) return;
         const reader = new FileReader();
-        reader.onload = event => { finalizeAssign(event.target.result, true); closeDialog(); };
+        reader.onload = event => { 
+            const name = nameInput.value.trim();
+            finalizeAssign(name, true, event.target.result); 
+            closeDialog(); 
+        };
         reader.readAsDataURL(file); logoInput.value = ""; 
     };
 
-    function finalizeAssign(content, isImage) {
-        const group = { id: Date.now(), content: content, isImage: isImage, ids: [...selectedIds] };
+    function finalizeAssign(name, isImage, imgData = null) {
+        // Content je vždy jméno pro Tabulku, image uchovává data
+        const group = { 
+            id: Date.now(), 
+            content: name, 
+            isImage: isImage, 
+            image: imgData, 
+            ids: [...selectedIds] 
+        };
+        
         soldGroups.push(group);
+        syncToCloud("add", group);
+        localStorage.setItem('fkr_pitch_map_data', JSON.stringify(soldGroups));
+
         renderGroup(group);
         selectedIds.forEach(id => {
             const el = document.getElementById(id);
@@ -238,34 +309,45 @@
 
     function renderGroup(group) {
         const els = group.ids.map(id => document.getElementById(id)).filter(el => el !== null);
+        if (els.length === 0) return;
+
         let r1 = 21, r2 = 0, c1 = 35, c2 = 0;
         els.forEach(el => {
             const r = parseInt(el.dataset.row), c = parseInt(el.dataset.col);
-            let rSpan = 1, cSpan = parseInt(el.dataset.spanC || 1);
-            if (el.dataset.isPrem) { rSpan = 2; cSpan = 2; }
-            if (el.dataset.isArc) { rSpan = 4; cSpan = 2; } 
+            let rSpan = (el.dataset.isPrem ? 2 : 1), cSpan = parseInt(el.dataset.spanC || (el.dataset.isPrem ? 2 : 1));
+            if (el.id === 'arc-l' || el.id === 'arc-r') { rSpan = 4; cSpan = 4; }
             if (r < r1) r1 = r; if (r + rSpan - 1 > r2) r2 = r + rSpan - 1;
             if (c < c1) c1 = c; if (c + cSpan - 1 > c2) c2 = c + cSpan - 1;
         });
+
         const lbl = document.createElement('div');
         lbl.className = 'sponsor-label'; lbl.id = 'lbl-' + group.id; 
-        if (group.isImage) {
+        
+        // Pokud je logo, zobraz logo, jinak text (v tabulce je content vždy text)
+        if (group.isImage && group.image) {
+            const img = document.createElement('img'); img.src = group.image; lbl.appendChild(img);
+        } else if (group.isImage && !group.image && group.content.startsWith('data:image')) {
+            // Zpětná kompatibilita pro stará data, kde byl obraz v contentu
             const img = document.createElement('img'); img.src = group.content; lbl.appendChild(img);
         } else {
             lbl.innerText = group.content; lbl.classList.add('text-mode');
             lbl.style.fontSize = Math.min(25, Math.max(10, 8 + (els.length) / 1.5)) + "px";
         }
+
         lbl.style.top = ((r1 - 1) * 5) + "%"; lbl.style.left = ((c1 - 1) * (100 / 34)) + "%";
         lbl.style.width = ((c2 - c1 + 1) * (100 / 34)) + "%"; lbl.style.height = ((r2 - r1 + 1) * 5) + "%";
-        lbl.onclick = () => { if(confirm("Smazat?")) removeGroup(group.id); };
+        lbl.onclick = () => { if(confirm("Smazat " + group.content + " z cloudu?")) removeGroup(group.id); };
         overlayContainer.appendChild(lbl);
     }
 
     function removeGroup(gid) {
+        syncToCloud("remove", { id: gid });
         const g = soldGroups.find(x => x.id === gid);
-        if(!g) return;
-        g.ids.forEach(id => { const el = document.getElementById(id); if(el) { el.classList.remove('sold-hide'); el.style.visibility = 'visible'; } });
+        if(g) {
+            g.ids.forEach(id => { const el = document.getElementById(id); if(el) { el.classList.remove('sold-hide'); el.style.visibility = 'visible'; } });
+        }
         soldGroups = soldGroups.filter(x => x.id !== gid);
+        localStorage.setItem('fkr_pitch_map_data', JSON.stringify(soldGroups));
         const l = document.getElementById('lbl-' + gid); if(l) l.remove();
         updateStats();
     }
@@ -276,7 +358,7 @@
             const el = document.getElementById(id);
             if(el) { 
                 sMoney += parseInt(el.dataset.price); 
-                sCount += (el.dataset.isPrem ? 4 : (el.dataset.isArc ? 8 : 1)); 
+                sCount += (el.dataset.isPrem ? 4 : (el.id.includes('arc') ? 8 : 1)); 
             }
         }));
         document.getElementById('sold-count').innerText = sCount;
@@ -287,6 +369,8 @@
         });
         document.getElementById('sel-price').innerText = selMoney.toLocaleString();
     }
+
+    window.onload = loadFromCloud;
 </script>
 </body>
 </html>
