@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FKŘ - Sponzorská mapa hřiště</title>
+    <title>FKŘ - Sponzorská mapa hřiště v210</title>
     <style>
         :root {
             --pitch-green: #2e7d32;
@@ -11,101 +11,122 @@
             --line-white: rgba(255, 255, 255, 0.95);
             --sold-red: #d32f2f;
             --gold: #ffd700;
-            --premium-blue: #00e5ff;
             --premium-orange: #E97132;
             --large-box-blue: #156082;
             --selected-yellow: #ffeb3b;
             --grass-dark-overlay: rgba(0, 0, 0, 0.22);
+            --penalty-red: #cc0000;
+            --p-width: 1100px;
+            --p-height: 620px;
+            --sq-w: calc(1100px / 27);
+            --cell-h: calc(620px / 19);
         }
 
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #121212; color: white; text-align: center; margin: 0; padding: 0; overflow-x: hidden; }
-        .header-sticky { position: sticky; top: 0; z-index: 100; background: #121212; padding: 10px 5px; border-bottom: 1px solid #333; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        h1 { font-size: 1.1rem; margin: 0; color: #fff; letter-spacing: 0.5px; }
+        
+        .header-sticky { position: sticky; top: 0; z-index: 500; background: #121212; padding: 10px 5px; border-bottom: 1px solid #333; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .stats { background: #222; padding: 10px 15px; border-radius: 8px; display: inline-flex; gap: 15px; font-size: 0.9rem; }
+        
+        #confirm-btn { display: none; background: var(--gold); border: none; padding: 14px 28px; font-weight: bold; border-radius: 8px; margin-top: 10px; cursor: pointer; color: black; font-size: 1rem; }
 
-        .stats { background: #222; padding: 8px 12px; border-radius: 8px; display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 8px; border: 1px solid #444; font-size: 0.8rem; }
-        .stats div { border-right: 1px solid #444; padding-right: 8px; }
-        .stats div:last-child { border: none; padding-right: 0; }
-        .stats span { font-weight: bold; color: var(--gold); }
-
-        .btn-confirm { width: 90%; max-width: 400px; padding: 12px; background: var(--gold); color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 0.9rem; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: #1e1e1e; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid #444; text-align: left; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #ccc; }
+        .form-group input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 25px; }
+        .btn-save { background: var(--gold); color: black; border: none; padding: 12px; border-radius: 5px; flex: 1; font-weight: bold; cursor: pointer; }
+        .btn-cancel { background: #444; color: white; border: none; padding: 12px; border-radius: 5px; flex: 1; cursor: pointer; }
 
         .scroll-container { width: 100vw; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 0; }
-        .main-layout { display: inline-grid; grid-template-columns: 35px 1100px 35px; grid-template-rows: 25px 647px 25px; margin: 0 auto; position: relative; }
-        .col-labels { display: grid; grid-template-columns: repeat(34, 1fr); font-size: 9px; font-weight: bold; color: #888; align-items: center; }
-        .row-labels-left, .row-labels-right { display: grid; grid-template-rows: repeat(20, 1fr); font-size: 10px; font-weight: bold; color: #888; align-items: center; }
-        .row-labels-left { position: sticky; left: 0; z-index: 60; background: #121212; }
+        .main-layout { display: inline-grid; grid-template-columns: 35px var(--p-width) 35px; grid-template-rows: 25px var(--p-height) 25px; margin: 0 auto; position: relative; }
+        .col-labels { display: grid; grid-template-columns: repeat(27, 1fr); font-size: 10px; font-weight: bold; color: #888; }
+        .row-labels-left { position: sticky; left: 0; z-index: 60; background: #121212; display: grid; grid-template-rows: repeat(19, 1fr); font-size: 11px; font-weight: bold; color: #888; height: var(--p-height); }
 
-        .pitch-wrapper { position: relative; background: var(--pitch-green); border: 2px solid white; width: 100%; height: 100%; box-sizing: border-box; }
-        .grid-container { display: grid; grid-template-columns: repeat(34, 1fr); grid-template-rows: repeat(20, 1fr); width: 100%; height: 100%; }
+        .pitch-wrapper { position: relative; background: var(--pitch-green); border: 2px solid white; width: 100%; height: 100%; box-sizing: border-box; overflow: hidden; }
+        .pitch-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 161px; height: 161px; background-image: url('https://kaprhalo.github.io/fkr-umt-prodej/MAIN-FKR-LOGO.png'); background-size: cover; z-index: 100; pointer-events: none; border-radius: 50%; }
+        .center-circle-mark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 161px; height: 161px; border-radius: 50%; border: 3px solid var(--line-white); z-index: 95; pointer-events: none; }
+        .mid-line-bg::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; background: var(--line-white); transform: translateX(-50%); z-index: 1; }
 
-        .square { border: 0.1px solid rgba(255,255,255,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; transition: 0.1s; }
-        .premium-spot { grid-column: span 2; grid-row: span 2; background: var(--premium-blue) !important; color: black !important; font-size: 11px !important; z-index: 20; position: relative; }
-        .premium-spot.center-50k { font-size: 13px !important; border: 2px solid gold !important; }
+        .svg-arc-container { position: absolute; top: calc(var(--cell-h) * 7); width: var(--sq-w); height: calc(var(--cell-h) * 5); z-index: 120; }
+        .svg-arc-container svg { width: 100%; height: 100%; overflow: visible; }
+        .arc-interactive-path { fill: var(--large-box-blue); stroke: var(--line-white); stroke-width: 3; cursor: pointer; transition: fill 0.2s; }
+        .arc-interactive-path.selected { fill: var(--selected-yellow) !important; }
 
-        .center-circle-color { background-color: var(--center-dark-green) !important; }
-        .grass-darker { background-color: var(--grass-dark-overlay) !important; }
-        .large-box-color { background-color: var(--large-box-blue) !important; }
-        .orange-premium-color { background-color: var(--premium-orange) !important; }
-        .square.selected, .penalty-arc.selected { background-color: var(--selected-yellow) !important; color: black !important; z-index: 35; }
+        .combined-cell { grid-column: span 2; background-color: var(--grass-dark-overlay); z-index: 30; display: flex; align-items: center; justify-content: center; }
+        .mask-h-l { clip-path: polygon(100% 0, 100% 100%, 45% 100%, 0 55%, 0 0); }
+        .mask-l-l { clip-path: polygon(100% 0, 100% 100%, 0 100%, 0 45%, 45% 0); }
+        .mask-h-r { clip-path: polygon(0 0, 0 100%, 55% 100%, 100% 55%, 100% 0); }
+        .mask-l-r { clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 45%, 55% 0); }
 
-        .marking { position: absolute; border: 2px solid var(--line-white); pointer-events: none; z-index: 10; box-sizing: border-box; }
-        .center-line { top: 0; bottom: 0; left: 50%; width: 2px; background: var(--line-white); transform: translateX(-50%); border:none; }
-        .penalty-l { top: 20%; left: 0; width: 14.7%; height: 60%; border-left: none; } 
-        .penalty-r { top: 20%; right: 0; width: 14.7%; height: 60%; border-right: none; }
-        .goal-l { top: 35%; left: 0; width: 5.8%; height: 30%; border-left: none; }
-        .goal-r { top: 35%; right: 0; width: 5.8%; height: 30%; border-right: none; }
-
-        .penalty-arc {
-            position: absolute; top: 40%; width: 11.76%; height: 20%; z-index: 15;
-            border-radius: 50%; border: 2px solid var(--line-white);
-            background-color: var(--large-box-blue);
-            cursor: pointer; display: flex; align-items: center; font-weight: bold; 
-            font-size: 12px; box-sizing: border-box;
-        }
-        .penalty-arc-l { left: 8.82%; border-left: none; clip-path: inset(0 0 0 50%); justify-content: flex-end; padding-right: 15px; }
-        .penalty-arc-r { right: 8.82%; border-right: none; clip-path: inset(0 50% 0 0); justify-content: flex-start; padding-left: 15px; }
-
-        #sponsor-overlays { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
-        .sponsor-label { position: absolute; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; pointer-events: auto; border-radius: 2px; overflow: hidden; }
-        .sponsor-label.text-mode { background: var(--sold-red); color: white; }
-        .sponsor-label img { max-width: 100%; max-height: 100%; object-fit: contain; }
-
-        #custom-dialog, #payment-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; }
-        .dialog-content { background: #222; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .dialog-content h2 { margin-top: 0; color: var(--gold); font-size: 1.2rem; }
+        .selected, .half-sq-hor.selected { background-color: var(--selected-yellow) !important; color: black !important; }
         
-        .input-as-btn { 
-            width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #444; 
-            background: #111; color: white; box-sizing: border-box; font-size: 1rem; text-align: center;
+        .price-tag-overlay { position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); z-index: 140; width: 100%; text-align: center; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(27, 1fr); grid-template-rows: repeat(19, 1fr); width: 100%; height: 100%; position: relative; z-index: 10; }
+        .square { border: 0.1px solid rgba(255,255,255,0.08); position: relative; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; cursor: pointer; box-sizing: border-box; }
+        .price-tag { position: relative; z-index: 10; padding: 2px 4px; border-radius: 2px; }
+        
+        .half-sq-hor { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 7px; cursor: pointer; z-index: 25; }
+        
+        .sponsor-label { 
+            position: absolute; display: flex; align-items: center; justify-content: center; 
+            background: var(--sold-red); color: white; z-index: 400; font-size: 10px; font-weight: bold; 
+            cursor: pointer; text-align: center; border: 1px solid rgba(255,255,255,0.4); 
+            pointer-events: auto !important;
+            background-size: contain; background-repeat: no-repeat; background-position: center;
         }
 
-        #qr-wrap { background: white; padding: 10px; border-radius: 10px; display: inline-block; margin: 15px 0; }
-        #qr-img { width: 200px; height: 200px; display: block; }
-        .payment-info { background: #333; padding: 12px; border-radius: 8px; font-size: 0.85rem; text-align: left; margin: 10px 0; border: 1px solid #444; }
-        .payment-info b { color: var(--gold); }
-
-        .btn-main { width: 100%; padding: 12px; margin-bottom: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        .btn-gold { background: var(--gold); color: black; }
-        .btn-cancel { background: transparent; color: #888; cursor: pointer; padding: 10px; font-size: 0.9rem; }
-
-        .footer-admin { margin: 40px auto; padding: 20px; width: 90%; max-width: 500px; background: #1a1a1a; border-radius: 15px; border: 1px solid #333; font-size: 0.8rem; color: #888; }
-        .admin-link { display: inline-block; margin-top: 10px; padding: 12px 20px; background: #333; color: var(--gold); text-decoration: none; border-radius: 8px; font-weight: bold; border: 1px solid #444; }
+        .under-logo-color { background-color: var(--grass-dark-overlay); }
+        .grass-darker { background-color: var(--grass-dark-overlay); }
+        .center-dark-color { background-color: var(--center-dark-green); }
+        .orange-premium-color { background-color: var(--premium-orange); }
+        .large-box-color { background-color: var(--large-box-blue); }
         
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--gold); }
+        .penalty-spot { background-color: var(--penalty-red); }
+        .penalty-spot::after { content: ""; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background-color: white; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; }
+        .penalty-spot.selected::after { background-color: black; }
+
+        .marking { position: absolute; border: 3px solid var(--line-white); pointer-events: none; z-index: 85; box-sizing: border-box; }
+        .penalty-l { top: 21.05%; left: 0; width: calc(5 * 100% / 27); height: 57.89%; border-left: none; } 
+        .penalty-r { top: 21.05%; right: 0; width: calc(5 * 100% / 27); height: 57.89%; border-right: none; }
+        .goal-l { top: 36.84%; left: 0; width: calc(2 * 100% / 27); height: 26.31%; border-left: none; }
+        .goal-r { top: 36.84%; right: 0; width: calc(2 * 100% / 27); height: 26.31%; border-right: none; }
+
+        #comb-r8c12-13, #comb-r12c12-13 { justify-content: flex-start !important; padding-left: 8px; }
+        #comb-r8c15-16, #comb-r12c15-16 { justify-content: flex-end !important; padding-right: 8px; }
     </style>
 </head>
 <body>
 
-<div id="loading-overlay">Synchronizace s FKŘ Cloudem...</div>
+<div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; display:none; align-items:center; justify-content:center; font-weight:bold; color:var(--gold);">Synchronizace s cloudem...</div>
 
 <div class="header-sticky">
     <h1>FKŘ - Sponzorská mapa hřiště</h1>
     <div class="stats">
         <div>Prodáno: <span id="sold-count">0</span></div>
         <div>Vybráno: <span id="money-raised">0</span> Kč</div>
-        <div>Výběr: <span id="sel-price" class="sel-text">0</span> Kč</div>
+        <div>Výběr: <span id="sel-price">0</span> Kč</div>
     </div>
-    <button id="confirm-btn" class="btn-confirm" onclick="openSponsorModal()">PŘIŘADIT SPONZORA</button>
+    <button id="confirm-btn" onclick="openSponsorModal()">POKRAČUJ</button>
+</div>
+
+<div id="sponsor-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Údaje sponzora</h2>
+        <div class="form-group">
+            <label>Název sponzora / Jméno</label>
+            <input type="text" id="sponsor-name" placeholder="Např. Jan Novák">
+        </div>
+        <div class="form-group">
+            <label>Nahrát logo (volitelné)</label>
+            <input type="file" id="sponsor-logo-input" accept="image/*">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeSponsorModal()">Zrušit</button>
+            <button class="btn-save" onclick="handleSponsorSubmit()">Uložit a odeslat</button>
+        </div>
+    </div>
 </div>
 
 <div class="scroll-container">
@@ -113,214 +134,224 @@
         <div class="corner"></div><div id="col-labels-top" class="col-labels"></div><div class="corner"></div>
         <div id="row-labels-left" class="row-labels-left"></div>
         <div class="pitch-wrapper">
-            <div class="marking center-line"></div>
+            <div class="svg-arc-container" style="left: calc(var(--sq-w) * 5 - 2px);">
+                <svg viewBox="0 0 100 200" preserveAspectRatio="none">
+                    <path id="arc-merged-l" class="arc-interactive-path" d="M0,0 C60,0 100,50 100,100 C100,150 60,200 0,200 Z" onclick="toggleSelect(this)" data-price="15000"></path>
+                </svg>
+                <div id="price-l" class="price-tag-overlay" style="top: calc(var(--cell-h) * 2.5); transform: translateY(-50%); left: 0;">15000</div>
+            </div>
+            <div class="svg-arc-container" style="left: calc(var(--sq-w) * 21 - 2px);">
+                <svg viewBox="0 0 100 200" preserveAspectRatio="none">
+                    <path id="arc-merged-r" class="arc-interactive-path" d="M100,0 C40,0 0,50 0,100 C0,150 40,200 100,200 Z" onclick="toggleSelect(this)" data-price="15000"></path>
+                </svg>
+                <div id="price-r" class="price-tag-overlay" style="top: calc(var(--cell-h) * 2.5); transform: translateY(-50%); left: 0;">15000</div>
+            </div>
+            <div class="center-circle-mark"></div>
             <div class="marking penalty-l"></div><div class="marking penalty-r"></div>
             <div class="marking goal-l"></div><div class="marking goal-r"></div>
-            <div id="arc-l" class="penalty-arc penalty-arc-l" data-price="15000" data-row="9" data-col="6" data-is-arc="true" onclick="toggleSelect(this)">15000</div>
-            <div id="arc-r" class="penalty-arc penalty-arc-r" data-price="15000" data-row="9" data-col="28" data-is-arc="true" onclick="toggleSelect(this)">15000</div>
+            <div class="pitch-logo"></div>
             <div class="grid-container" id="pitch"></div>
-            <div id="sponsor-overlays"></div>
+            <div id="sponsor-overlays" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 110;"></div>
         </div>
-        <div id="row-labels-right" class="row-labels-right"></div>
-        <div class="corner"></div><div id="col-labels-bottom" class="col-labels"></div><div class="corner"></div>
     </div>
 </div>
-
-<div class="footer-admin">
-    <div style="font-weight: bold; margin-bottom: 5px;">Sekce pro správce FKŘ</div>
-    <a href="https://docs.google.com/spreadsheets/d/1S93o-yrPx5ie-LiNmWyXo2B03CrpsfnbcjI-c-OjIEw/edit?usp=sharing" target="_blank" class="admin-link">OTEVŘÍT GOOGLE TABULKU</a>
-</div>
-
-<div id="custom-dialog">
-    <div class="dialog-content">
-        <h2>Údaje sponzora</h2>
-        <input type="text" id="sponsor-name-input" class="input-as-btn" placeholder="Zadejte jméno sponzora...">
-        <button class="btn-main btn-gold" onclick="proceedToPayment()">POKRAČOVAT K PLATBĚ</button>
-        <button class="btn-main" style="background:#444; color:white" onclick="triggerFileInput()">NAHRÁT LOGO (NEPOVINNÉ)</button>
-        <div class="btn-cancel" onclick="closeModals()">Zrušit</div>
-    </div>
-</div>
-
-<div id="payment-modal">
-    <div class="dialog-content">
-        <h2 style="color:var(--gold)">Platební údaje</h2>
-        <div id="qr-wrap"><img id="qr-img" src="" alt="Generuji QR..."></div>
-        <div class="payment-info">
-            Částka: <b id="pay-amount">--</b> Kč<br>
-            Účet: <b id="pay-acc">--</b><br>
-            Zpráva: <b id="pay-msg">--</b>
-        </div>
-        <button class="btn-main btn-gold" onclick="finalizeAll()">MÁM ZAPLACENO, ODESLAT</button>
-        <div class="btn-cancel" onclick="closeModals()">Zpět</div>
-    </div>
-</div>
-
-<input type="file" id="logo-input" accept="image/*" style="display:none">
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyTBG97NqszYexIfjy7wW2ssF3sGZSe1iSdIfq5uHOcRlZERFb8IHywFsAlLFi8qRG/exec";
-    const ACCOUNT = "278574009/0300"; // ZDE ÚČET
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6zRoId_3Iu1UkaOnhyFUHdGUyA7KrchjE0LvXyVq2idilhk3LB6-yaI3kG4PLwpex/exec";
+    
+    const COLS = 27, ROWS = 19;
     const grid = document.getElementById('pitch');
     const overlayContainer = document.getElementById('sponsor-overlays');
     const confirmBtn = document.getElementById('confirm-btn');
-    const logoInput = document.getElementById('logo-input');
-    const nameInput = document.getElementById('sponsor-name-input');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const COLS = 34, ROWS = 20;
+    const modal = document.getElementById('sponsor-modal');
 
     let selectedIds = [];
-    let soldGroups = [];
-    let currentImgData = null;
 
-    async function loadFromCloud() {
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const data = await res.json();
-            if (data && Array.isArray(data)) { soldGroups = data; renderAllSold(); }
-        } catch (e) { console.error(e); }
-        finally { loadingOverlay.style.display = 'none'; }
-    }
-
-    function renderAllSold() {
-        overlayContainer.innerHTML = "";
-        soldGroups.forEach(g => {
-            renderGroup(g);
-            g.ids.forEach(id => { const el = document.getElementById(id); if(el) { el.classList.add('sold-hide'); el.style.visibility = 'hidden'; }});
-        });
-        updateStats();
-    }
-
-    function getColLetter(n) { let letter = ""; while (n > 0) { let temp = (n - 1) % 26; letter = String.fromCharCode(65 + temp) + letter; n = Math.floor((n - temp) / 26); } return letter; }
-    for (let c = 1; c <= COLS; c++) { 
-        const txt = getColLetter(c);
-        document.getElementById('col-labels-top').appendChild(Object.assign(document.createElement('div'), {innerText: txt}));
-        document.getElementById('col-labels-bottom').appendChild(Object.assign(document.createElement('div'), {innerText: txt}));
-    }
-    for (let r = 1; r <= ROWS; r++) { 
-        document.getElementById('row-labels-left').appendChild(Object.assign(document.createElement('div'), {innerText: r}));
-        document.getElementById('row-labels-right').appendChild(Object.assign(document.createElement('div'), {innerText: r}));
-    }
-
-    const premiums = [
-        { c: 3, r: 10, id: 'p-pen-l', price: 30000 },
-        { c: 17, r: 10, id: 'p-mid', price: 50000, cls: 'center-50k' },
-        { c: 31, r: 10, id: 'p-pen-r', price: 30000 }
-    ];
+    // Inicializace hrací plochy
+    for (let c = 1; c <= COLS; c++) document.getElementById('col-labels-top').innerHTML += `<div>${c}</div>`;
+    for (let r = 1; r <= ROWS; r++) document.getElementById('row-labels-left').innerHTML += `<div>${String.fromCharCode(64+r)}</div>`;
 
     for (let r = 1; r <= ROWS; r++) {
         for (let c = 1; c <= COLS; c++) {
-            const isMergedL = (r === 9 || r === 12) && c === 7;
-            const isMergedR = (r === 9 || r === 12) && c === 27;
-            if (isMergedL || isMergedR) {
+            const isArcL = (c === 6) && (r === 8 || r === 12);
+            const isArcR = (c === 21) && (r === 8 || r === 12);
+            const isCenterBody = (r >= 9 && r <= 11) && (c === 11 || c === 16);
+            const isCenterStep = (r === 8 || r === 12) && (c === 12 || c === 15);
+
+            if (isArcL || isArcR || isCenterBody || isCenterStep) {
                 const sq = document.createElement('div');
-                sq.className = 'square grass-darker'; sq.style.gridColumn = 'span 2';
-                sq.id = `r${r}c${c}-merged`; sq.dataset.row = r; sq.dataset.col = c;
-                sq.dataset.price = 2000; sq.dataset.spanC = 2; sq.innerText = "2000";
-                sq.onclick = () => toggleSelect(sq); grid.appendChild(sq); continue;
+                let mask = (isArcL && r===8) ? 'mask-h-l' : (isArcL && r===12) ? 'mask-l-l' : (isArcR && r===8) ? 'mask-h-r' : (isArcR && r===12) ? 'mask-l-r' : 'none';
+                sq.className = `square combined-cell ${mask}`;
+                sq.id = `comb-r${r}c${c}-${c+1}`;
+                sq.dataset.price = 3000;
+                sq.innerHTML = `<span class="price-tag">3000</span>`;
+                sq.onclick = () => toggleSelect(sq);
+                grid.appendChild(sq);
+                c++; continue;
             }
-            if (((r === 9 || r === 12) && (c === 8 || c === 28))) continue;
-            const p = premiums.find(p => p.c === c && p.r === r);
-            if (p) {
-                const div = document.createElement('div');
-                div.className = 'square premium-spot ' + (p.cls || '');
-                div.id = p.id; div.dataset.price = p.price;
-                div.dataset.row = r; div.dataset.col = c;
-                div.dataset.isPrem = "true"; div.innerText = p.price;
-                div.onclick = () => toggleSelect(div); grid.appendChild(div); continue;
+
+            if ((c === 6 || c === 22) && (r >= 9 && r <= 11)) {
+                const empty = document.createElement('div');
+                empty.className = 'square grass-darker';
+                empty.style.pointerEvents = 'none';
+                grid.appendChild(empty);
+                continue;
             }
-            if (premiums.some(p => c >= p.c && c < p.c + 2 && r >= p.r && r < p.r + 2 && !(c === p.c && r === p.r))) continue;
+
             const sq = document.createElement('div');
-            sq.className = 'square'; sq.id = `r${r}c${c}`; sq.dataset.row = r; sq.dataset.col = c;
-            const dx = c - 17.5, dy = r - 10.5, dist = Math.sqrt(dx*dx + dy*dy);
-            let price = 1000;
-            if (dist <= 3.2) { price = 3000; sq.classList.add('center-circle-color'); }
-            else if (((c <= 2) || (c >= 33)) && (r >= 8 && r <= 13) || ((r === 1 || r === 20) && (c === 1 || c === 34))) { price = 5000; sq.classList.add('orange-premium-color'); }
-            else if (((c <= 5) || (c >= 30)) && (r >= 5 && r <= 16)) { price = 4000; sq.classList.add('large-box-color'); }
-            else if (r >= 5 && r <= 16 && c >= 6 && c <= 29) { price = 2000; sq.classList.add('grass-darker'); }
-            sq.dataset.price = price; sq.innerText = price;
-            sq.onclick = () => toggleSelect(sq); grid.appendChild(sq);
+            sq.className = 'square'; sq.id = `r${r}c${c}`;
+            const dx = c - 14, dy = r - 10, dist = Math.sqrt(dx*dx + dy*dy);
+            const isColumnN = (c === 14);
+            const isSplitRow = ((r >= 1 && r <= 4) || (r >= 16 && r <= 19)) && !isColumnN;
+
+            if (r === 10 && (c === 4 || c === 24)) {
+                sq.classList.add('penalty-spot'); sq.dataset.price = 30000; sq.onclick = () => toggleSelect(sq);
+            } else if ((r === 1 || r === 19) && (c === 1 || c === 27)) {
+                sq.classList.add('orange-premium-color'); sq.dataset.price = 5000; sq.innerHTML = `<span class="price-tag">5000</span>`; sq.onclick = () => toggleSelect(sq);
+            } else if (isSplitRow) {
+                const container = document.createElement('div'); container.style.display = "flex"; container.style.flexDirection = "column"; container.style.width = "100%"; container.style.height = "100%";
+                ['T', 'B'].forEach(side => {
+                    const half = document.createElement('div'); half.className = 'half-sq-hor'; half.id = `r${r}c${c}_${side}`; half.dataset.price = 1000; half.innerHTML = `1000`; half.onclick = (e) => { e.stopPropagation(); toggleSelect(half); };
+                    container.appendChild(half);
+                });
+                sq.appendChild(container);
+            } else {
+                if (c === 14) sq.classList.add('mid-line-bg');
+                let price = 2000;
+                if (dist <= 2.3) { price = 0; sq.classList.add('under-logo-color'); }
+                else if (isColumnN) { price = 3000; sq.classList.add('center-dark-color'); }
+                else if ((c <= 2 || c >= 26) && (r >= 8 && r <= 12)) { price = 5000; sq.classList.add('orange-premium-color'); }
+                else if ((c <= 5 || c >= 23) && (r >= 5 && r <= 15)) { price = 4000; sq.classList.add('large-box-color'); }
+                else { sq.classList.add('grass-darker'); }
+
+                sq.dataset.price = price;
+                if (price > 0 && !(c === 14 && r >= 8 && r <= 12)) { sq.innerHTML = `<span class="price-tag">${price}</span>`; sq.onclick = () => toggleSelect(sq); }
+                else if (price === 0) sq.style.pointerEvents = 'none';
+            }
+            grid.appendChild(sq);
+        }
+    }
+
+    function openSponsorModal() { modal.style.display = 'flex'; }
+    function closeSponsorModal() { modal.style.display = 'none'; }
+
+    async function handleSponsorSubmit() {
+        const name = document.getElementById('sponsor-name').value;
+        const fileInput = document.getElementById('sponsor-logo-input');
+        if (!name) return alert("Vyplňte jméno.");
+
+        document.getElementById('loading-overlay').style.display = 'flex';
+
+        if (fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.readAsDataURL(fileInput.files[0]);
+            reader.onload = async () => { await finalizeAll(name, reader.result); };
+        } else {
+            await finalizeAll(name, "");
+        }
+    }
+
+    async function finalizeAll(name, logoBase64) {
+        const group = { id: Date.now(), content: name, logo: logoBase64, ids: [...selectedIds] };
+        try {
+            await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "add", data: group }) });
+            setTimeout(() => { location.reload(); }, 1500);
+        } catch (e) {
+            alert("Chyba při komunikaci.");
+            document.getElementById('loading-overlay').style.display = 'none';
         }
     }
 
     function toggleSelect(el) {
-        if (el.classList.contains('sold-hide')) return;
-        if (selectedIds.includes(el.id)) { selectedIds = selectedIds.filter(i => i !== el.id); el.classList.remove('selected'); }
-        else { selectedIds.push(el.id); el.classList.add('selected'); }
+        if (el.style.visibility === 'hidden') return;
+        const id = el.id;
+
+        // Najít text ceny pro déčka
+        let priceTag = null;
+        if (id === 'arc-merged-l') priceTag = document.getElementById('price-l');
+        if (id === 'arc-merged-r') priceTag = document.getElementById('price-r');
+
+        if (selectedIds.includes(id)) {
+            selectedIds = selectedIds.filter(i => i !== id); 
+            el.classList.remove('selected');
+            if (priceTag) priceTag.style.color = 'rgba(255,255,255,0.9)'; // Zpět na bílou
+        } else {
+            selectedIds.push(id); 
+            el.classList.add('selected');
+            if (priceTag) priceTag.style.color = 'black'; // Na černou při výběru
+        }
+
         confirmBtn.style.display = selectedIds.length > 0 ? 'block' : 'none';
         updateStats();
     }
 
-    function openSponsorModal() { document.getElementById('custom-dialog').style.display = 'flex'; }
-    function closeModals() { document.getElementById('custom-dialog').style.display = 'none'; document.getElementById('payment-modal').style.display = 'none'; }
-    function triggerFileInput() { if (!nameInput.value.trim()) { alert("Zadejte jméno."); return; } logoInput.click(); }
-    
-    logoInput.onchange = e => {
-        const reader = new FileReader();
-        reader.onload = event => { currentImgData = event.target.result; alert("Logo připraveno."); };
-        reader.readAsDataURL(e.target.files[0]);
-    };
-
-    function proceedToPayment() {
-        const name = nameInput.value.trim();
-        if(!name) { alert("Zadejte jméno."); return; }
-        let total = 0;
-        selectedIds.forEach(id => { const el = document.getElementById(id); if(el) total += parseInt(el.dataset.price); });
-        const acc = ACCOUNT.split('/');
-        const rawMsg = `FKR UMT Prodej: ${name}`;
-        const cleanMsg = rawMsg.normalize("NFD").replace(/[\u0300-\u036f]/g, "").substring(0, 20);
-        document.getElementById('pay-amount').innerText = total.toLocaleString();
-        document.getElementById('pay-acc').innerText = ACCOUNT;
-        document.getElementById('pay-msg').innerText = rawMsg;
-        document.getElementById('qr-img').src = `https://api.paylibo.com/paylibo/generator/czech/image?accountNumber=${acc[0]}&bankCode=${acc[1]}&amount=${total}&currency=CZK&message=${encodeURIComponent(cleanMsg)}`;
-        document.getElementById('custom-dialog').style.display = 'none';
-        document.getElementById('payment-modal').style.display = 'flex';
+    function updateStats() {
+        let sel = 0; selectedIds.forEach(id => { const el = document.getElementById(id); if(el) sel += parseInt(el.dataset.price || 0); });
+        document.getElementById('sel-price').innerText = sel.toLocaleString();
     }
 
-    async function finalizeAll() {
-        const group = { id: Date.now(), content: nameInput.value.trim(), isImage: !!currentImgData, image: currentImgData, ids: [...selectedIds] };
-        fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "add", data: group }) });
-        soldGroups.push(group);
-        renderGroup(group);
-        selectedIds.forEach(id => { const el = document.getElementById(id); if(el) { el.classList.add('sold-hide'); el.style.visibility = 'hidden'; }});
-        selectedIds = []; confirmBtn.style.display = 'none'; closeModals();
-        alert("Rezervace odeslána!"); updateStats();
+    async function removeGroup(groupId) {
+        if (!confirm("Opravdu smazat?")) return;
+        document.getElementById('loading-overlay').style.display = 'flex';
+        await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "remove", id: groupId }) });
+        setTimeout(() => { location.reload(); }, 800);
     }
 
     function renderGroup(g) {
         const els = g.ids.map(id => document.getElementById(id)).filter(e => e);
         if(!els.length) return;
-        let r1=21, r2=0, c1=35, c2=0;
+        let r1=20, r2=0, c1=28, c2=0;
         els.forEach(el => {
-            const r = parseInt(el.dataset.row), c = parseInt(el.dataset.col);
-            let rs = (el.dataset.isPrem ? 2 : 1), cs = (el.id.includes('arc') ? 4 : (el.dataset.isPrem ? 2 : 1));
-            if(r < r1) r1 = r; if(r+rs-1 > r2) r2 = r+rs-1; if(c < c1) c1 = c; if(c+cs-1 > c2) c2 = c+cs-1;
+            let r, c, w=1, h=1;
+            if (el.id.startsWith('comb')) { const m = el.id.match(/\d+/g); r = parseInt(m[0]); c = parseInt(m[1]); w = 2; }
+            else if (el.id.startsWith('r')) { const m = el.id.match(/\d+/g); r = parseInt(m[0]); c = parseInt(m[1]); }
+            else { r = 8; h = 5; c = el.id.includes('-l') ? 6 : 22; }
+            if(r < r1) r1 = r; if(r+h-1 > r2) r2 = r+h-1; if(c < c1) c1 = c; if(c+w-1 > c2) c2 = c+w-1;
         });
+
         const lbl = document.createElement('div');
         lbl.className = 'sponsor-label';
-        if(g.isImage && g.image) { const img = document.createElement('img'); img.src = g.image; lbl.appendChild(img); }
-        else { lbl.innerText = g.content; lbl.classList.add('text-mode'); }
-        lbl.style.top = ((r1-1)*5)+"%"; lbl.style.left = ((c1-1)*(100/34))+"%";
-        lbl.style.width = ((c2-c1+1)*(100/34))+"%"; lbl.style.height = ((r2-r1+1)*5)+"%";
-        // Zpět přidaná funkce mazání:
-        lbl.onclick = () => { if(confirm("Smazat " + g.content + " z cloudu?")) removeGroup(g.id); };
+        
+        // OPRAVA ČTENÍ LOGA Z GOOGLE DRIVE
+        if (g.logo && g.logo.includes("drive.google.com")) {
+            lbl.style.backgroundImage = `url(${g.logo})`;
+            lbl.style.backgroundColor = "white";
+            lbl.innerText = "";
+        } else {
+            lbl.innerText = g.content;
+            lbl.style.backgroundColor = "var(--sold-red)";
+        }
+
+        lbl.style.top = ((r1-1)*(100/19))+"%"; lbl.style.left = ((c1-1)*(100/27))+"%";
+        lbl.style.width = ((c2-c1+1)*(100/27))+"%"; lbl.style.height = ((r2-r1+1)*(100/19))+"%";
+        lbl.onclick = (e) => { e.stopPropagation(); removeGroup(g.id); };
         overlayContainer.appendChild(lbl);
     }
 
-    function removeGroup(gid) {
-        fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "remove", id: gid }) });
-        const g = soldGroups.find(x => x.id === gid);
-        if(g) { g.ids.forEach(id => { const el = document.getElementById(id); if(el) { el.classList.remove('sold-hide'); el.style.visibility = 'visible'; } }); }
-        soldGroups = soldGroups.filter(x => x.id !== gid);
-        const l = document.getElementById('lbl-' + gid); if(l) l.remove();
-        updateStats();
-    }
-
-    function updateStats() {
-        let money = 0; soldGroups.forEach(g => g.ids.forEach(id => { const el = document.getElementById(id); if(el) money += parseInt(el.dataset.price); }));
-        document.getElementById('sold-count').innerText = soldGroups.length;
-        document.getElementById('money-raised').innerText = money.toLocaleString();
-        let sel = 0; selectedIds.forEach(id => { const el = document.getElementById(id); if(el) sel += parseInt(el.dataset.price); });
-        document.getElementById('sel-price').innerText = sel.toLocaleString();
+    async function loadFromCloud() {
+        try {
+            const res = await fetch(SCRIPT_URL);
+            const data = await res.json();
+            if (data && Array.isArray(data)) { 
+                data.forEach(g => { 
+                    renderGroup(g); 
+                    g.ids.forEach(id => { 
+                        const el = document.getElementById(id); if(el) {
+                            el.style.visibility = 'hidden'; 
+                            if(el.id === 'arc-merged-l') document.getElementById('price-l').style.visibility = 'hidden';
+                            if(el.id === 'arc-merged-r') document.getElementById('price-r').style.visibility = 'hidden';
+                        }
+                    }); 
+                });
+                let total = 0; data.forEach(g => g.ids.forEach(id => { 
+                    const el = document.getElementById(id); 
+                    if(el) total += parseInt(el.dataset.price || 0); 
+                }));
+                document.getElementById('money-raised').innerText = total.toLocaleString(); 
+                document.getElementById('sold-count').innerText = data.length;
+            }
+        } catch (e) { console.error("Load error:", e); }
+        document.getElementById('loading-overlay').style.display = 'none';
     }
     window.onload = loadFromCloud;
 </script>
