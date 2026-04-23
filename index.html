@@ -3,103 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FKŘ - Sponzorská mapa hřiště v210</title>
+    <title>FKŘ - Sponzorská mapa v238</title>
     <style>
         :root {
-            --pitch-green: #2e7d32;
-            --center-dark-green: #1b431e;
-            --line-white: rgba(255, 255, 255, 0.95);
-            --sold-red: #d32f2f;
-            --gold: #ffd700;
-            --premium-orange: #E97132;
-            --large-box-blue: #156082;
-            --selected-yellow: #ffeb3b;
-            --grass-dark-overlay: rgba(0, 0, 0, 0.22);
-            --penalty-red: #cc0000;
-            --p-width: 1100px;
-            --p-height: 620px;
-            --sq-w: calc(1100px / 27);
-            --cell-h: calc(620px / 19);
+            --pitch-green: #2e7d32; --center-dark-green: #1b431e; --line-white: rgba(255, 255, 255, 0.95);
+            --sold-red: #d32f2f; --gold: #ffd700; --premium-orange: #E97132; --large-box-blue: #156082;
+            --selected-yellow: #ffeb3b; --grass-dark-overlay: rgba(0, 0, 0, 0.22); --penalty-red: #cc0000;
+            --p-width: 1100px; --p-height: 620px; --sq-w: calc(1100px / 27); --cell-h: calc(620px / 19);
         }
-
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #121212; color: white; text-align: center; margin: 0; padding: 0; overflow-x: hidden; }
-        
         .header-sticky { position: sticky; top: 0; z-index: 500; background: #121212; padding: 10px 5px; border-bottom: 1px solid #333; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .stats { background: #222; padding: 10px 15px; border-radius: 8px; display: inline-flex; gap: 15px; font-size: 0.9rem; }
+        #confirm-btn { display: none; background: var(--gold); border: none; padding: 14px 28px; font-weight: bold; border-radius: 8px; margin-top: 10px; cursor: pointer; color: black; font-size: 1rem; z-index: 600; }
         
-        #confirm-btn { display: none; background: var(--gold); border: none; padding: 14px 28px; font-weight: bold; border-radius: 8px; margin-top: 10px; cursor: pointer; color: black; font-size: 1rem; }
-
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { background: #1e1e1e; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid #444; text-align: left; }
-        .form-group { margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #ccc; }
-        .form-group input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; }
+        .form-group input[type="text"], .form-group input[type="file"] { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; }
+        
+        .checkbox-group { display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; font-size: 0.85rem; color: #bbb; cursor: pointer; }
+        .checkbox-group input { width: 18px; height: 18px; cursor: pointer; margin-top: 2px; }
+
         .modal-actions { display: flex; gap: 10px; margin-top: 25px; }
         .btn-save { background: var(--gold); color: black; border: none; padding: 12px; border-radius: 5px; flex: 1; font-weight: bold; cursor: pointer; }
+        .btn-save:disabled { background: #555; color: #888; cursor: not-allowed; }
         .btn-cancel { background: #444; color: white; border: none; padding: 12px; border-radius: 5px; flex: 1; cursor: pointer; }
 
         .scroll-container { width: 100vw; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 0; }
         .main-layout { display: inline-grid; grid-template-columns: 35px var(--p-width) 35px; grid-template-rows: 25px var(--p-height) 25px; margin: 0 auto; position: relative; }
         .col-labels { display: grid; grid-template-columns: repeat(27, 1fr); font-size: 10px; font-weight: bold; color: #888; }
         .row-labels-left { position: sticky; left: 0; z-index: 60; background: #121212; display: grid; grid-template-rows: repeat(19, 1fr); font-size: 11px; font-weight: bold; color: #888; height: var(--p-height); }
-
         .pitch-wrapper { position: relative; background: var(--pitch-green); border: 2px solid white; width: 100%; height: 100%; box-sizing: border-box; overflow: hidden; }
+        .mid-line-bg::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; background: var(--line-white); transform: translateX(-50%); z-index: 2; pointer-events: none; }
         .pitch-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 161px; height: 161px; background-image: url('https://kaprhalo.github.io/fkr-umt-prodej/MAIN-FKR-LOGO.png'); background-size: cover; z-index: 100; pointer-events: none; border-radius: 50%; }
         .center-circle-mark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 161px; height: 161px; border-radius: 50%; border: 3px solid var(--line-white); z-index: 95; pointer-events: none; }
-        .mid-line-bg::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; background: var(--line-white); transform: translateX(-50%); z-index: 1; }
-
         .svg-arc-container { position: absolute; top: calc(var(--cell-h) * 7); width: var(--sq-w); height: calc(var(--cell-h) * 5); z-index: 120; }
         .svg-arc-container svg { width: 100%; height: 100%; overflow: visible; }
         .arc-interactive-path { fill: var(--large-box-blue); stroke: var(--line-white); stroke-width: 3; cursor: pointer; transition: fill 0.2s; }
         .arc-interactive-path.selected { fill: var(--selected-yellow) !important; }
-
-        .combined-cell { grid-column: span 2; background-color: var(--grass-dark-overlay); z-index: 30; display: flex; align-items: center; justify-content: center; }
+        .combined-cell { grid-column: span 2; background-color: var(--grass-dark-overlay); z-index: 30; display: flex; align-items: center; justify-content: center; position: relative; }
         .mask-h-l { clip-path: polygon(100% 0, 100% 100%, 45% 100%, 0 55%, 0 0); }
         .mask-l-l { clip-path: polygon(100% 0, 100% 100%, 0 100%, 0 45%, 45% 0); }
         .mask-h-r { clip-path: polygon(0 0, 0 100%, 55% 100%, 100% 55%, 100% 0); }
         .mask-l-r { clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 45%, 55% 0); }
-
         .selected, .half-sq-hor.selected { background-color: var(--selected-yellow) !important; color: black !important; }
-        
-        .price-tag-overlay { position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); z-index: 140; width: 100%; text-align: center; }
-
         .grid-container { display: grid; grid-template-columns: repeat(27, 1fr); grid-template-rows: repeat(19, 1fr); width: 100%; height: 100%; position: relative; z-index: 10; }
         .square { border: 0.1px solid rgba(255,255,255,0.08); position: relative; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; cursor: pointer; box-sizing: border-box; }
-        .price-tag { position: relative; z-index: 10; padding: 2px 4px; border-radius: 2px; }
-        
+        .price-tag { position: relative; z-index: 20; padding: 2px 4px; border-radius: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); pointer-events: none; }
         .half-sq-hor { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 7px; cursor: pointer; z-index: 25; }
-        
-        .sponsor-label { 
-            position: absolute; display: flex; align-items: center; justify-content: center; 
-            background: var(--sold-red); color: white; z-index: 400; font-size: 10px; font-weight: bold; 
-            cursor: pointer; text-align: center; border: 1px solid rgba(255,255,255,0.4); 
-            pointer-events: auto !important;
-            background-size: contain; background-repeat: no-repeat; background-position: center;
-        }
-
+        .sponsor-label { position: absolute; display: flex; align-items: center; justify-content: center; background: var(--sold-red); color: white; z-index: 400; font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; border: none; pointer-events: auto !important; background-size: contain; background-repeat: no-repeat; background-position: center; }
         .under-logo-color { background-color: var(--grass-dark-overlay); }
         .grass-darker { background-color: var(--grass-dark-overlay); }
         .center-dark-color { background-color: var(--center-dark-green); }
         .orange-premium-color { background-color: var(--premium-orange); }
         .large-box-color { background-color: var(--large-box-blue); }
-        
         .penalty-spot { background-color: var(--penalty-red); }
         .penalty-spot::after { content: ""; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background-color: white; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; }
-        .penalty-spot.selected::after { background-color: black; }
-
         .marking { position: absolute; border: 3px solid var(--line-white); pointer-events: none; z-index: 85; box-sizing: border-box; }
         .penalty-l { top: 21.05%; left: 0; width: calc(5 * 100% / 27); height: 57.89%; border-left: none; } 
         .penalty-r { top: 21.05%; right: 0; width: calc(5 * 100% / 27); height: 57.89%; border-right: none; }
-        .goal-l { top: 36.84%; left: 0; width: calc(2 * 100% / 27); height: 26.31%; border-left: none; }
-        .goal-r { top: 36.84%; right: 0; width: calc(2 * 100% / 27); height: 26.31%; border-right: none; }
-
-        #comb-r8c12-13, #comb-r12c12-13 { justify-content: flex-start !important; padding-left: 8px; }
-        #comb-r8c15-16, #comb-r12c15-16 { justify-content: flex-end !important; padding-right: 8px; }
+        #comb-r8c12-13 .price-tag, #comb-r12c12-13 .price-tag { position: absolute; right: 2px; }
+        #comb-r8c15-16 .price-tag, #comb-r12c15-16 .price-tag { position: absolute; left: 2px; }
+        .half-sq-hor .price-tag { text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
 
-<div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; display:none; align-items:center; justify-content:center; font-weight:bold; color:var(--gold);">Synchronizace s cloudem...</div>
+<div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; display:none; align-items:center; justify-content:center; font-weight:bold; color:var(--gold);">Synchronizace...</div>
 
 <div class="header-sticky">
     <h1>FKŘ - Sponzorská mapa hřiště</h1>
@@ -116,15 +87,21 @@
         <h2>Údaje sponzora</h2>
         <div class="form-group">
             <label>Název sponzora / Jméno</label>
-            <input type="text" id="sponsor-name" placeholder="Např. Jan Novák">
+            <input type="text" id="sponsor-name" placeholder="Zadejte název">
         </div>
         <div class="form-group">
-            <label>Nahrát logo (volitelné)</label>
+            <label>Nahrát logo</label>
             <input type="file" id="sponsor-logo-input" accept="image/*">
         </div>
+
+        <label class="checkbox-group">
+            <input type="checkbox" id="sponsor-gdpr" onchange="toggleSaveButton()">
+            <span>Souhlasím s podmínkami a se zpracováním osobních údajů.</span>
+        </label>
+
         <div class="modal-actions">
             <button class="btn-cancel" onclick="closeSponsorModal()">Zrušit</button>
-            <button class="btn-save" onclick="handleSponsorSubmit()">Uložit a odeslat</button>
+            <button class="btn-save" id="btn-save-final" onclick="handleSponsorSubmit()" disabled>Uložit</button>
         </div>
     </div>
 </div>
@@ -135,75 +112,48 @@
         <div id="row-labels-left" class="row-labels-left"></div>
         <div class="pitch-wrapper">
             <div class="svg-arc-container" style="left: calc(var(--sq-w) * 5 - 2px);">
-                <svg viewBox="0 0 100 200" preserveAspectRatio="none">
-                    <path id="arc-merged-l" class="arc-interactive-path" d="M0,0 C60,0 100,50 100,100 C100,150 60,200 0,200 Z" onclick="toggleSelect(this)" data-price="15000"></path>
-                </svg>
-                <div id="price-l" class="price-tag-overlay" style="top: calc(var(--cell-h) * 2.5); transform: translateY(-50%); left: 0;">15000</div>
+                <svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-l" class="arc-interactive-path" d="M0,0 C60,0 100,50 100,100 C100,150 60,200 0,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg>
+                <div id="price-l" class="price-tag-overlay" style="top: calc(var(--cell-h) * 2.5); transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); z-index: 140; width: 100%; text-align: center;">15000</div>
             </div>
             <div class="svg-arc-container" style="left: calc(var(--sq-w) * 21 - 2px);">
-                <svg viewBox="0 0 100 200" preserveAspectRatio="none">
-                    <path id="arc-merged-r" class="arc-interactive-path" d="M100,0 C40,0 0,50 0,100 C0,150 40,200 100,200 Z" onclick="toggleSelect(this)" data-price="15000"></path>
-                </svg>
-                <div id="price-r" class="price-tag-overlay" style="top: calc(var(--cell-h) * 2.5); transform: translateY(-50%); left: 0;">15000</div>
+                <svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-r" class="arc-interactive-path" d="M100,0 C40,0 0,50 0,100 C0,150 40,200 100,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg>
+                <div id="price-r" class="price-tag-overlay" style="top: calc(var(--cell-h) * 2.5); transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); z-index: 140; width: 100%; text-align: center;">15000</div>
             </div>
-            <div class="center-circle-mark"></div>
-            <div class="marking penalty-l"></div><div class="marking penalty-r"></div>
-            <div class="marking goal-l"></div><div class="marking goal-r"></div>
-            <div class="pitch-logo"></div>
             <div class="grid-container" id="pitch"></div>
             <div id="sponsor-overlays" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 110;"></div>
+            <div class="center-circle-mark"></div><div class="pitch-logo"></div><div class="marking penalty-l"></div><div class="marking penalty-r"></div>
         </div>
     </div>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6zRoId_3Iu1UkaOnhyFUHdGUyA7KrchjE0LvXyVq2idilhk3LB6-yaI3kG4PLwpex/exec";
-    
-    const COLS = 27, ROWS = 19;
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDEvP8sTWyaVDeAinTC5LK39pgaXKK8OYi-eU-e1HNoRjuLpchpEftVHwrBuITOrAE/exec";
     const grid = document.getElementById('pitch');
     const overlayContainer = document.getElementById('sponsor-overlays');
-    const confirmBtn = document.getElementById('confirm-btn');
-    const modal = document.getElementById('sponsor-modal');
-
     let selectedIds = [];
 
-    // Inicializace hrací plochy
-    for (let c = 1; c <= COLS; c++) document.getElementById('col-labels-top').innerHTML += `<div>${c}</div>`;
-    for (let r = 1; r <= ROWS; r++) document.getElementById('row-labels-left').innerHTML += `<div>${String.fromCharCode(64+r)}</div>`;
+    for (let c = 1; c <= 27; c++) document.getElementById('col-labels-top').innerHTML += `<div>${c}</div>`;
+    for (let r = 1; r <= 19; r++) document.getElementById('row-labels-left').innerHTML += `<div>${String.fromCharCode(64+r)}</div>`;
 
-    for (let r = 1; r <= ROWS; r++) {
-        for (let c = 1; c <= COLS; c++) {
+    for (let r = 1; r <= 19; r++) {
+        for (let c = 1; c <= 27; c++) {
             const isArcL = (c === 6) && (r === 8 || r === 12);
             const isArcR = (c === 21) && (r === 8 || r === 12);
             const isCenterBody = (r >= 9 && r <= 11) && (c === 11 || c === 16);
             const isCenterStep = (r === 8 || r === 12) && (c === 12 || c === 15);
-
             if (isArcL || isArcR || isCenterBody || isCenterStep) {
                 const sq = document.createElement('div');
                 let mask = (isArcL && r===8) ? 'mask-h-l' : (isArcL && r===12) ? 'mask-l-l' : (isArcR && r===8) ? 'mask-h-r' : (isArcR && r===12) ? 'mask-l-r' : 'none';
-                sq.className = `square combined-cell ${mask}`;
-                sq.id = `comb-r${r}c${c}-${c+1}`;
-                sq.dataset.price = 3000;
-                sq.innerHTML = `<span class="price-tag">3000</span>`;
-                sq.onclick = () => toggleSelect(sq);
-                grid.appendChild(sq);
-                c++; continue;
+                sq.className = `square combined-cell ${mask}`; sq.id = `comb-r${r}c${c}-${c+1}`; sq.dataset.price = 3000;
+                sq.innerHTML = `<span class="price-tag">3000</span>`; sq.onclick = () => toggleSelect(sq); grid.appendChild(sq); c++; continue;
             }
-
             if ((c === 6 || c === 22) && (r >= 9 && r <= 11)) {
-                const empty = document.createElement('div');
-                empty.className = 'square grass-darker';
-                empty.style.pointerEvents = 'none';
-                grid.appendChild(empty);
-                continue;
+                const empty = document.createElement('div'); empty.className = 'square grass-darker'; empty.style.pointerEvents = 'none'; grid.appendChild(empty); continue;
             }
-
-            const sq = document.createElement('div');
-            sq.className = 'square'; sq.id = `r${r}c${c}`;
+            const sq = document.createElement('div'); sq.className = 'square'; sq.id = `r${r}c${c}`;
             const dx = c - 14, dy = r - 10, dist = Math.sqrt(dx*dx + dy*dy);
             const isColumnN = (c === 14);
             const isSplitRow = ((r >= 1 && r <= 4) || (r >= 16 && r <= 19)) && !isColumnN;
-
             if (r === 10 && (c === 4 || c === 24)) {
                 sq.classList.add('penalty-spot'); sq.dataset.price = 30000; sq.onclick = () => toggleSelect(sq);
             } else if ((r === 1 || r === 19) && (c === 1 || c === 27)) {
@@ -211,7 +161,9 @@
             } else if (isSplitRow) {
                 const container = document.createElement('div'); container.style.display = "flex"; container.style.flexDirection = "column"; container.style.width = "100%"; container.style.height = "100%";
                 ['T', 'B'].forEach(side => {
-                    const half = document.createElement('div'); half.className = 'half-sq-hor'; half.id = `r${r}c${c}_${side}`; half.dataset.price = 1000; half.innerHTML = `1000`; half.onclick = (e) => { e.stopPropagation(); toggleSelect(half); };
+                    const half = document.createElement('div'); half.className = 'half-sq-hor'; half.id = `r${r}c${c}_${side}`; half.dataset.price = 1000;
+                    half.innerHTML = `<span class="price-tag">1000</span>`;
+                    half.onclick = (e) => { e.stopPropagation(); toggleSelect(half); };
                     container.appendChild(half);
                 });
                 sq.appendChild(container);
@@ -223,7 +175,6 @@
                 else if ((c <= 2 || c >= 26) && (r >= 8 && r <= 12)) { price = 5000; sq.classList.add('orange-premium-color'); }
                 else if ((c <= 5 || c >= 23) && (r >= 5 && r <= 15)) { price = 4000; sq.classList.add('large-box-color'); }
                 else { sq.classList.add('grass-darker'); }
-
                 sq.dataset.price = price;
                 if (price > 0 && !(c === 14 && r >= 8 && r <= 12)) { sq.innerHTML = `<span class="price-tag">${price}</span>`; sq.onclick = () => toggleSelect(sq); }
                 else if (price === 0) sq.style.pointerEvents = 'none';
@@ -232,106 +183,99 @@
         }
     }
 
-    function openSponsorModal() { modal.style.display = 'flex'; }
-    function closeSponsorModal() { modal.style.display = 'none'; }
+    function toggleSelect(el) {
+        const id = el.id;
+        const btn = document.getElementById('confirm-btn');
+        const priceL = document.getElementById('price-l'), priceR = document.getElementById('price-r');
+        
+        if (selectedIds.includes(id)) {
+            selectedIds = selectedIds.filter(i => i !== id); el.classList.remove('selected');
+            // Oprava Déček při odebírání výběru
+            if(id === 'arc-merged-l') priceL.style.color = 'rgba(255,255,255,0.9)';
+            if(id === 'arc-merged-r') priceR.style.color = 'rgba(255,255,255,0.9)';
+        } else {
+            selectedIds.push(id); el.classList.add('selected');
+            // Oprava Déček při výběru (černý text na žlutém podkladu)
+            if(id === 'arc-merged-l') priceL.style.color = 'black';
+            if(id === 'arc-merged-r') priceR.style.color = 'black';
+        }
+        btn.style.display = selectedIds.length > 0 ? 'block' : 'none';
+        let total = 0; 
+        selectedIds.forEach(i => { const e = document.getElementById(i); if(e) total += parseInt(e.dataset.price || 0); });
+        document.getElementById('sel-price').innerText = total.toLocaleString();
+    }
+
+    function convertToHumanCoords(id) {
+        if (id.startsWith('arc')) return "D-oblouk";
+        let suffix = id.includes('_T') ? ' (horní)' : id.includes('_B') ? ' (dolní)' : '';
+        if (id.startsWith('comb')) { const m = id.match(/\d+/g); return String.fromCharCode(64+parseInt(m[0]))+m[1]; }
+        const p = id.match(/\d+/g); if(!p) return id;
+        return String.fromCharCode(64+parseInt(p[0]))+p[1] + suffix;
+    }
+
+    function toggleSaveButton() {
+        const gdpr = document.getElementById('sponsor-gdpr');
+        const saveBtn = document.getElementById('btn-save-final');
+        saveBtn.disabled = !gdpr.checked;
+    }
+
+    function openSponsorModal() {
+        document.getElementById('sponsor-modal').style.display = 'flex';
+        document.getElementById('sponsor-gdpr').checked = false;
+        document.getElementById('btn-save-final').disabled = true;
+    }
+
+    function closeSponsorModal() { document.getElementById('sponsor-modal').style.display = 'none'; }
 
     async function handleSponsorSubmit() {
         const name = document.getElementById('sponsor-name').value;
         const fileInput = document.getElementById('sponsor-logo-input');
         if (!name) return alert("Vyplňte jméno.");
-
         document.getElementById('loading-overlay').style.display = 'flex';
-
         if (fileInput.files[0]) {
             const reader = new FileReader();
             reader.readAsDataURL(fileInput.files[0]);
-            reader.onload = async () => { await finalizeAll(name, reader.result); };
-        } else {
-            await finalizeAll(name, "");
-        }
+            reader.onload = async () => { await sendToCloud(name, reader.result); };
+        } else { await sendToCloud(name, ""); }
     }
 
-    async function finalizeAll(name, logoBase64) {
-        const group = { id: Date.now(), content: name, logo: logoBase64, ids: [...selectedIds] };
+    async function sendToCloud(name, base64) {
         try {
-            await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "add", data: group }) });
-            setTimeout(() => { location.reload(); }, 1500);
-        } catch (e) {
-            alert("Chyba při komunikaci.");
-            document.getElementById('loading-overlay').style.display = 'none';
-        }
-    }
-
-    function toggleSelect(el) {
-        if (el.style.visibility === 'hidden') return;
-        const id = el.id;
-
-        // Najít text ceny pro déčka
-        let priceTag = null;
-        if (id === 'arc-merged-l') priceTag = document.getElementById('price-l');
-        if (id === 'arc-merged-r') priceTag = document.getElementById('price-r');
-
-        if (selectedIds.includes(id)) {
-            selectedIds = selectedIds.filter(i => i !== id); 
-            el.classList.remove('selected');
-            if (priceTag) priceTag.style.color = 'rgba(255,255,255,0.9)'; // Zpět na bílou
-        } else {
-            selectedIds.push(id); 
-            el.classList.add('selected');
-            if (priceTag) priceTag.style.color = 'black'; // Na černou při výběru
-        }
-
-        confirmBtn.style.display = selectedIds.length > 0 ? 'block' : 'none';
-        updateStats();
-    }
-
-    function updateStats() {
-        let sel = 0; selectedIds.forEach(id => { const el = document.getElementById(id); if(el) sel += parseInt(el.dataset.price || 0); });
-        document.getElementById('sel-price').innerText = sel.toLocaleString();
-    }
-
-    async function removeGroup(groupId) {
-        if (!confirm("Opravdu smazat?")) return;
-        document.getElementById('loading-overlay').style.display = 'flex';
-        await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "remove", id: groupId }) });
-        setTimeout(() => { location.reload(); }, 800);
+            const humanCoords = selectedIds.map(id => convertToHumanCoords(id)).join(", ");
+            await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "add", data: { id: Date.now(), content: name, logo: base64, ids: [...selectedIds], humanIds: humanCoords }})});
+            setTimeout(() => location.reload(), 1500);
+        } catch (e) { alert("Chyba."); document.getElementById('loading-overlay').style.display = 'none'; }
     }
 
     function renderGroup(g) {
-        const els = g.ids.map(id => document.getElementById(id)).filter(e => e);
-        if(!els.length) return;
+        const els = g.ids.map(id => document.getElementById(id)).filter(e => e); if(!els.length) return;
         let r1=20, r2=0, c1=28, c2=0;
         els.forEach(el => {
             let r, c, w=1, h=1;
-            if (el.id.startsWith('comb')) { const m = el.id.match(/\d+/g); r = parseInt(m[0]); c = parseInt(m[1]); w = 2; }
-            else if (el.id.startsWith('r')) { const m = el.id.match(/\d+/g); r = parseInt(m[0]); c = parseInt(m[1]); }
-            else { r = 8; h = 5; c = el.id.includes('-l') ? 6 : 22; }
-            if(r < r1) r1 = r; if(r+h-1 > r2) r2 = r+h-1; if(c < c1) c1 = c; if(c+w-1 > c2) c2 = c+w-1;
+            const pureId = el.id.split('_')[0];
+            if (pureId.startsWith('comb')) { const m = pureId.match(/\d+/g); r=parseInt(m[0]); c=parseInt(m[1]); w=2; }
+            else if (pureId.startsWith('r')) { const m = pureId.match(/\d+/g); r=parseInt(m[0]); c=parseInt(m[1]); }
+            else { r=8; h=5; c=pureId.includes('-l')?6:22; }
+            if(r<r1)r1=r; if(r+h-1>r2)r2=r+h-1; if(c<c1)c1=c; if(c+w-1>c2)c2=c+w-1;
         });
-
-        const lbl = document.createElement('div');
-        lbl.className = 'sponsor-label';
-        
-        // OPRAVA ČTENÍ LOGA Z GOOGLE DRIVE
-        if (g.logo && g.logo.includes("drive.google.com")) {
-            lbl.style.backgroundImage = `url(${g.logo})`;
-            lbl.style.backgroundColor = "white";
-            lbl.innerText = "";
-        } else {
-            lbl.innerText = g.content;
-            lbl.style.backgroundColor = "var(--sold-red)";
+        const lbl = document.createElement('div'); lbl.className = 'sponsor-label';
+        if (g.logo && g.logo.startsWith("data:image")) { 
+            lbl.style.backgroundImage = `url(${g.logo})`; 
+            lbl.style.backgroundColor = "transparent"; 
+            lbl.innerText = ""; 
+        } else { 
+            lbl.innerText = g.content; 
+            lbl.style.backgroundColor = "var(--sold-red)"; 
         }
-
         lbl.style.top = ((r1-1)*(100/19))+"%"; lbl.style.left = ((c1-1)*(100/27))+"%";
         lbl.style.width = ((c2-c1+1)*(100/27))+"%"; lbl.style.height = ((r2-r1+1)*(100/19))+"%";
-        lbl.onclick = (e) => { e.stopPropagation(); removeGroup(g.id); };
+        lbl.onclick = (e) => { e.stopPropagation(); if(confirm("Smazat?")) { fetch(SCRIPT_URL, {method:"POST", mode:"no-cors", body:JSON.stringify({action:"remove", id:g.id})}); setTimeout(() => location.reload(), 800); }};
         overlayContainer.appendChild(lbl);
     }
 
-    async function loadFromCloud() {
+    async function load() {
         try {
-            const res = await fetch(SCRIPT_URL);
-            const data = await res.json();
+            const res = await fetch(SCRIPT_URL); const data = await res.json();
             if (data && Array.isArray(data)) { 
                 data.forEach(g => { 
                     renderGroup(g); 
@@ -343,17 +287,13 @@
                         }
                     }); 
                 });
-                let total = 0; data.forEach(g => g.ids.forEach(id => { 
-                    const el = document.getElementById(id); 
-                    if(el) total += parseInt(el.dataset.price || 0); 
-                }));
-                document.getElementById('money-raised').innerText = total.toLocaleString(); 
-                document.getElementById('sold-count').innerText = data.length;
+                let total = 0; data.forEach(g => g.ids.forEach(id => { const e = document.getElementById(id); if(e) total += parseInt(e.dataset.price || 0); }));
+                document.getElementById('money-raised').innerText = total.toLocaleString(); document.getElementById('sold-count').innerText = data.length;
             }
-        } catch (e) { console.error("Load error:", e); }
+        } catch (e) {}
         document.getElementById('loading-overlay').style.display = 'none';
     }
-    window.onload = loadFromCloud;
+    window.onload = load;
 </script>
 </body>
 </html>
