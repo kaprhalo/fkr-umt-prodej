@@ -17,6 +17,7 @@
         }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #121212; color: white; text-align: center; margin: 0; padding: 0; overflow-x: hidden; }
         
+        /* ZMĚNA HLAVIČKY: Rozdělení do Grid oblastí pro snadnou responzivitu */
         .header-sticky { 
             position: sticky; 
             top: 0; 
@@ -26,12 +27,17 @@
             border-bottom: 2px solid var(--gold); 
             display: grid; 
             grid-template-columns: 100px 1fr 100px; 
+            grid-template-areas: 
+                "logo-l text logo-r"
+                "logo-l stats logo-r";
             align-items: center; 
             gap: 10px; 
         }
-        .header-logo-left { height: 60px; width: auto; object-fit: contain; justify-self: start; margin-left: 20px; transform: translateY(-5px); }
-        .header-logo-right { height: 60px; width: auto; object-fit: contain; justify-self: end; margin-right: 20px; transform: translateY(-5px); }
-        .header-center { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .header-logo-left { grid-area: logo-l; height: 60px; width: auto; object-fit: contain; justify-self: start; margin-left: 20px; align-self: center; transform: translateY(-5px); }
+        .header-logo-right { grid-area: logo-r; height: 60px; width: auto; object-fit: contain; justify-self: end; margin-right: 20px; align-self: center; transform: translateY(-5px); }
+        
+        .header-text { grid-area: text; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .header-stats { grid-area: stats; display: flex; flex-direction: column; align-items: center; }
         
         .main-title { font-size: 1.8rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 2px; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
         .sub-title { font-size: 1.2rem; color: var(--gold); margin: 5px 0 5px 0; font-weight: 700; text-transform: uppercase; }
@@ -41,14 +47,23 @@
         .stats span { color: var(--gold); font-weight: bold; }
         #confirm-btn { display: none; background: var(--gold); border: none; padding: 14px 28px; font-weight: bold; border-radius: 8px; margin-top: 10px; cursor: pointer; color: black; font-size: 1rem; z-index: 600; }
         
+        /* MOBILNÍ ZOBRAZENÍ: Přeskládání hlavičky */
         @media (max-width: 768px) {
-            .header-sticky { grid-template-columns: 60px 1fr 60px; padding: 10px 5px; gap: 5px; }
-            .header-logo-left { height: 45px; margin-left: 5px; transform: translateY(-2px); }
-            .header-logo-right { height: 45px; margin-right: 5px; transform: translateY(-2px); }
+            .header-sticky { 
+                grid-template-columns: 1fr 1fr; 
+                grid-template-areas: 
+                    "text text"
+                    "logo-l logo-r"
+                    "stats stats";
+                padding: 12px 10px; 
+                gap: 12px 10px;
+            }
+            .header-logo-left { justify-self: center; margin: 0; height: 50px; transform: none; }
+            .header-logo-right { justify-self: center; margin: 0; height: 50px; transform: none; }
             .main-title { font-size: 1.4rem; }
             .sub-title { font-size: 1rem; margin: 3px 0; }
-            .action-title { font-size: 0.85rem; margin-bottom: 8px; }
-            .stats { gap: 10px; font-size: 0.85rem; padding: 8px 15px; }
+            .action-title { font-size: 0.85rem; margin-bottom: 0; }
+            .stats { width: 100%; box-sizing: border-box; justify-content: space-around; gap: 10px; font-size: 0.85rem; padding: 10px 15px; }
         }
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
@@ -73,7 +88,6 @@
 
         .pitch-wrapper { position: relative; background: var(--pitch-green); border: 2px solid white; width: 100%; height: 100%; box-sizing: border-box; overflow: visible; }
         .mid-line-bg::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; background: var(--line-white); transform: translateX(-50%); z-index: 2; pointer-events: none; }
-        /* URL aktualizována zde */
         .pitch-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 161px; height: 161px; background-image: url('https://fkr1928.github.io/fkr-umt-prodej/MAIN-FKR-LOGO.png'); background-size: cover; z-index: 100; pointer-events: none; border-radius: 50%; }
         .center-circle-mark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 161px; height: 161px; border-radius: 50%; border: 3px solid var(--line-white); z-index: 95; pointer-events: none; }
         
@@ -174,11 +188,16 @@
 <div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:4000; display:flex; align-items:center; justify-content:center; font-weight:bold; color:var(--gold); flex-direction:column; gap:10px;">Synchronizuji data...</div>
 
 <div class="header-sticky">
-    <img src="https://fkr1928.github.io/fkr-umt-prodej/MAIN-FKR-LOGO.png" alt="FK Řeporyje" class="header-logo-left">
-    <div class="header-center">
+    <div class="header-text">
         <h1 class="main-title">FK ŘEPORYJE</h1>
         <h2 class="sub-title">Legenda v každém čtverci</h2>
         <div class="action-title">Pojďme společně podpořit výstavbu nového hřiště s umělým povrchem a zlepšit tím tréninkové podmínky pro naše děti!</div>
+    </div>
+    
+    <img src="https://fkr1928.github.io/fkr-umt-prodej/MAIN-FKR-LOGO.png" alt="FK Řeporyje" class="header-logo-left">
+    <img src="https://fkr1928.github.io/fkr-umt-prodej/STOVKA-white.png" alt="STOVKA Logo" class="header-logo-right">
+    
+    <div class="header-stats">
         <div class="stats">
             <div>Prodáno: <span id="sold-count">0</span></div>
             <div>Vybráno: <span id="money-raised">0</span> Kč</div>
@@ -186,7 +205,6 @@
         </div>
         <button id="confirm-btn" onclick="openSponsorModal()">POKRAČUJ</button>
     </div>
-    <img src="https://fkr1928.github.io/fkr-umt-prodej/STOVKA-white.png" alt="STOVKA Logo" class="header-logo-right">
 </div>
 
 <div id="sponsor-modal" class="modal-overlay">
