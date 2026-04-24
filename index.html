@@ -36,7 +36,7 @@
         .btn-cancel { background: #444; color: white; border: none; padding: 12px; border-radius: 5px; flex: 1; cursor: pointer; }
 
         .scroll-container { width: 100vw; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 0; }
-        .main-layout { display: inline-grid; grid-template-columns: 35px var(--p-width) 35px; grid-template-rows: 25px var(--p-height) 25px; margin: 0 auto; position: relative; }
+        .main-layout { display: inline-grid; grid-template-columns: 35px var(--p-width) 35px; grid-template-rows: 25px var(--p-height) 25px auto; margin: 0 auto; position: relative; }
         .col-labels { display: grid; grid-template-columns: repeat(27, 1fr); font-size: 10px; font-weight: bold; color: #888; }
         .row-labels-left { position: sticky; left: 0; z-index: 60; background: #121212; display: grid; grid-template-rows: repeat(19, 1fr); font-size: 11px; font-weight: bold; color: #888; height: var(--p-height); }
         .row-labels-left div { display: flex; align-items: center; justify-content: center; }
@@ -49,12 +49,13 @@
         .grid-container { display: grid; grid-template-columns: repeat(27, 1fr); grid-template-rows: repeat(19, 1fr); width: 100%; height: 100%; position: relative; z-index: 10; }
         .square { border: 0.1px solid rgba(255,255,255,0.08); position: relative; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; cursor: pointer; box-sizing: border-box; }
         
+        .price-tag { position: relative; z-index: 20; padding: 2px 4px; border-radius: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); pointer-events: none; }
+        
         .half-sq-hor { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 7px; cursor: pointer; z-index: 25; border-bottom: 0.1px solid rgba(255,255,255,0.05); }
         .half-sq-hor:last-child { border-bottom: none; }
 
         .combined-cell { grid-column: span 2; background-color: var(--center-dark-green) !important; z-index: 30; display: flex; align-items: center; justify-content: center; position: relative; }
         
-        /* FIX: Zarovnání u loga */
         .align-left { justify-content: flex-start !important; padding-left: 5px; }
         .align-right { justify-content: flex-end !important; padding-right: 5px; }
 
@@ -78,6 +79,13 @@
         .arc-interactive-path.selected { fill: var(--selected-yellow) !important; }
 
         .sponsor-label { position: absolute; display: flex; align-items: center; justify-content: center; z-index: 400; font-size: 10px; font-weight: bold; cursor: pointer !important; text-align: center; border: none; background-repeat: no-repeat; background-position: center; background-size: contain; pointer-events: auto !important; }
+
+        .dugout-wrapper { grid-column: 2; position: relative; margin-top: 25px; height: calc(var(--p-height) / 19); width: 100%; }
+        .dugout-grid { display: grid; grid-template-columns: repeat(27, 1fr); height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 10; }
+        .dugout-title { position: absolute; top: -18px; font-size: 11px; font-weight: 900; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; pointer-events: none; }
+        .dugout-title.home { left: calc((100% / 27) * 15); width: calc((100% / 27) * 4); text-align: center; }
+        .dugout-title.away { left: calc((100% / 27) * 8); width: calc((100% / 27) * 4); text-align: center; }
+        .sq-empty { pointer-events: none; }
     </style>
 </head>
 <body>
@@ -109,11 +117,18 @@
         <div class="corner"></div><div id="col-labels-top" class="col-labels"></div><div class="corner"></div>
         <div id="row-labels-left" class="row-labels-left"></div>
         <div class="pitch-wrapper">
-            <div class="svg-arc-container" style="left: calc(var(--sq-w) * 5 - 2px);"><svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-l" class="arc-interactive-path" d="M0,0 C60,0 100,50 100,100 C100,150 60,200 0,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg><div id="price-l" class="price-tag-overlay" style="top: 50%; transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); z-index: 140; width: 100%; text-align: center;">15000</div></div>
-            <div class="svg-arc-container" style="left: calc(var(--sq-w) * 21 - 2px);"><svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-r" class="arc-interactive-path" d="M100,0 C40,0 0,50 0,100 C0,150 40,200 100,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg><div id="price-r" class="price-tag-overlay" style="top: 50%; transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); z-index: 140; width: 100%; text-align: center;">15000</div></div>
+            <div class="svg-arc-container" style="left: calc(var(--sq-w) * 5 - 2px);"><svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-l" class="arc-interactive-path" d="M0,0 C60,0 100,50 100,100 C100,150 60,200 0,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg><div id="price-l" class="price-tag" style="top: 50%; transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: white; z-index: 140; width: 100%; text-align: center;">15000</div></div>
+            <div class="svg-arc-container" style="left: calc(var(--sq-w) * 21 - 2px);"><svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-r" class="arc-interactive-path" d="M100,0 C40,0 0,50 0,100 C0,150 40,200 100,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg><div id="price-r" class="price-tag" style="top: 50%; transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: white; z-index: 140; width: 100%; text-align: center;">15000</div></div>
             <div class="grid-container" id="pitch"></div>
             <div id="sponsor-overlays" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 110;"></div>
             <div class="center-circle-mark"></div><div class="pitch-logo"></div><div class="marking penalty-l"></div><div class="marking penalty-r"></div><div class="marking goal-l"></div><div class="marking goal-r"></div>
+        </div>
+        
+        <div class="dugout-wrapper" id="dugout-wrapper">
+            <div class="dugout-title away">Hosté</div>
+            <div class="dugout-title home">Domácí</div>
+            <div class="dugout-grid" id="dugout-grid"></div>
+            <div id="dugout-overlays" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 110;"></div>
         </div>
     </div>
 </div>
@@ -132,7 +147,6 @@
             
             if (isArcL || isArcR || isCenterBody || isCenterStep) {
                 const sq = document.createElement('div');
-                // FIX: Specifické zarovnání
                 let specialAlign = "";
                 if ((r === 8 || r === 12) && (c === 12 || c === 15)) { 
                     if (c === 12) specialAlign = " align-left";
@@ -143,8 +157,10 @@
 
             const dx = c - 14, dy = r - 10, dist = Math.sqrt(dx*dx + dy*dy);
             if (dist <= 2.3) { const empty = document.createElement('div'); empty.className = 'square under-logo-color'; empty.style.pointerEvents = 'none'; grid.appendChild(empty); continue; }
+            
             const sq = document.createElement('div'); sq.className = 'square'; sq.id = `r${r}c${c}`;
             const isColumnN = (c === 14), isSplitRow = ((r >= 1 && r <= 4) || (r >= 16 && r <= 19)) && !isColumnN;
+
             if (r === 10 && (c === 4 || c === 24)) { sq.classList.add('penalty-spot'); sq.dataset.price = 30000; sq.onclick = () => toggleSelect(sq); }
             else if ((r === 1 || r === 19) && (c === 1 || c === 27)) { sq.classList.add('orange-premium-color'); sq.dataset.price = 5000; sq.innerHTML = `<span class="price-tag">5000</span>`; sq.onclick = () => toggleSelect(sq); }
             else if (isSplitRow) {
@@ -165,12 +181,26 @@
         }
     }
 
+    const dugoutGrid = document.getElementById('dugout-grid');
+    for (let c = 1; c <= 27; c++) {
+        const isDugout = (c >= 9 && c <= 12) || (c >= 16 && c <= 19);
+        if (isDugout) {
+            const sq = document.createElement('div');
+            sq.className = 'square center-dark-color';
+            sq.id = `rXc${c}`; sq.dataset.price = 3000; sq.innerHTML = `<span class="price-tag">3000</span>`; sq.onclick = () => toggleSelect(sq); 
+            dugoutGrid.appendChild(sq);
+        } else {
+            const empty = document.createElement('div'); empty.className = 'sq-empty'; dugoutGrid.appendChild(empty);
+        }
+    }
+
     function toggleSelect(el) {
         const id = el.id, btn = document.getElementById('confirm-btn');
         const priceTag = (id === 'arc-merged-l') ? document.getElementById('price-l') : (id === 'arc-merged-r') ? document.getElementById('price-r') : null;
         if (selectedIds.includes(id)) { 
             selectedIds = selectedIds.filter(i => i !== id); el.classList.remove('selected'); 
-            if(priceTag) priceTag.style.color = 'rgba(255,255,255,0.9)';
+            // OPRAVA V JS: po odznačení vrací čistě bílou
+            if(priceTag) priceTag.style.color = 'white';
         } else { 
             selectedIds.push(id); el.classList.add('selected'); 
             if(priceTag) priceTag.style.color = 'black';
@@ -182,6 +212,7 @@
 
     function convertToHumanCoords(id) {
         if (id.startsWith('arc')) return "D-oblouk";
+        if (id.startsWith('rX')) { const c = parseInt(id.match(/\d+/)[0]); return `Střídačka ${c >= 16 ? 'Domácí' : 'Hosté'} č. ${c}`; }
         let suffix = id.includes('_T') ? ' (h)' : id.includes('_B') ? ' (d)' : '';
         if (id.startsWith('comb')) { const m = id.match(/\d+/g); return String.fromCharCode(64+parseInt(m[0]))+m[1]; }
         const p = id.match(/\d+/g); return p ? String.fromCharCode(64+parseInt(p[0]))+p[1] + suffix : id;
@@ -209,34 +240,67 @@
 
     function renderGroup(g) {
         try {
-            const els = g.ids.map(id => document.getElementById(id)).filter(e => e); if(!els.length) return;
-            let r1=20, r2=0, c1=28, c2=0;
-            els.forEach(el => {
-                let r, c, w=1, h=1; const pureId = el.id.split('_')[0];
-                if (pureId.startsWith('comb')) { const m = pureId.match(/\d+/g); r=parseInt(m[0]); c=parseInt(m[1]); w=2; }
-                else if (pureId.startsWith('r')) { const m = pureId.match(/\d+/g); r=parseInt(m[0]); c=parseInt(m[1]); }
-                else { r=8; h=5; c=pureId.includes('-l')?6:22; }
-                if(r<r1)r1=r; if(r+h-1>r2)r2=r+h-1; if(c<c1)c1=c; if(c+w-1>c2)c2=c+w-1;
-            });
-            const lbl = document.createElement('div'); lbl.className = 'sponsor-label';
-            let bgColor = "var(--pitch-grass-dark)";
-            if (c1 === 14) bgColor = "var(--center-dark-green)";
-            else if ((c1 <= 5 || c2 >= 23) && (r1 >= 5 && r2 <= 15)) bgColor = "var(--large-box-blue)";
-            if (g.logo && g.logo.startsWith("data:image")) { lbl.style.backgroundImage = `url(${g.logo})`; lbl.style.backgroundColor = bgColor; }
-            else { lbl.innerText = g.content; lbl.style.backgroundColor = "var(--sold-red)"; lbl.style.color = "white"; }
-            lbl.style.top = ((r1-1)*(100/19))+"%"; lbl.style.left = ((c1-1)*(100/27))+"%";
-            lbl.style.width = ((c2-c1+1)*(100/27))+"%"; lbl.style.height = ((r2-r1+1)*(100/19))+"%";
-            lbl.onclick = (e) => { 
-                e.stopPropagation(); 
-                if(confirm("Smazat " + g.content + "?")) { 
-                    const loader = document.getElementById('loading-overlay');
-                    loader.innerText = "Mažu data...";
-                    loader.style.display = 'flex';
-                    fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "remove", id: g.id }) }); 
-                    setTimeout(() => location.reload(), 1500); 
+            const pitchIds = g.ids.filter(id => !id.startsWith('rX'));
+            const dugoutIds = g.ids.filter(id => id.startsWith('rX'));
+
+            if (pitchIds.length > 0) {
+                const els = pitchIds.map(id => document.getElementById(id)).filter(e => e); 
+                if(els.length) {
+                    let r1=20, r2=0, c1=28, c2=0;
+                    els.forEach(el => {
+                        let r, c, w=1, h=1; const pureId = el.id.split('_')[0];
+                        if (pureId.startsWith('comb')) { const m = pureId.match(/\d+/g); r=parseInt(m[0]); c=parseInt(m[1]); w=2; }
+                        else if (pureId.startsWith('r')) { const m = pureId.match(/\d+/g); r=parseInt(m[0]); c=parseInt(m[1]); }
+                        else { r=8; h=5; c=pureId.includes('-l')?6:22; }
+                        if(r<r1)r1=r; if(r+h-1>r2)r2=r+h-1; if(c<c1)c1=c; if(c+w-1>c2)c2=c+w-1;
+                    });
+                    const lbl = document.createElement('div'); lbl.className = 'sponsor-label';
+                    let bgColor = "var(--pitch-grass-dark)";
+                    if (c1 === 14) bgColor = "var(--center-dark-green)";
+                    else if ((c1 <= 5 || c2 >= 23) && (r1 >= 5 && r2 <= 15)) bgColor = "var(--large-box-blue)";
+                    if (g.logo && g.logo.startsWith("data:image")) { lbl.style.backgroundImage = `url(${g.logo})`; lbl.style.backgroundColor = bgColor; }
+                    else { lbl.innerText = g.content; lbl.style.backgroundColor = "var(--sold-red)"; lbl.style.color = "white"; }
+                    lbl.style.top = ((r1-1)*(100/19))+"%"; lbl.style.left = ((c1-1)*(100/27))+"%";
+                    lbl.style.width = ((c2-c1+1)*(100/27))+"%"; lbl.style.height = ((r2-r1+1)*(100/19))+"%";
+                    lbl.onclick = (e) => { 
+                        e.stopPropagation(); 
+                        if(confirm("Smazat " + g.content + "?")) { 
+                            const loader = document.getElementById('loading-overlay');
+                            loader.innerText = "Mažu data..."; loader.style.display = 'flex';
+                            fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "remove", id: g.id }) }); 
+                            setTimeout(() => location.reload(), 1500); 
+                        }
+                    };
+                    overlayContainer.appendChild(lbl);
                 }
-            };
-            overlayContainer.appendChild(lbl);
+            }
+
+            if (dugoutIds.length > 0) {
+                const els = dugoutIds.map(id => document.getElementById(id)).filter(e => e); 
+                if(els.length) {
+                    let c1=28, c2=0;
+                    els.forEach(el => {
+                        const c = parseInt(el.id.match(/\d+/)[0]);
+                        if(c < c1) c1 = c; if(c > c2) c2 = c;
+                    });
+                    const lbl = document.createElement('div'); lbl.className = 'sponsor-label';
+                    if (g.logo && g.logo.startsWith("data:image")) { lbl.style.backgroundImage = `url(${g.logo})`; lbl.style.backgroundColor = "var(--center-dark-green)"; }
+                    else { lbl.innerText = g.content; lbl.style.backgroundColor = "var(--sold-red)"; lbl.style.color = "white"; }
+                    
+                    lbl.style.top = "0%"; lbl.style.left = ((c1-1)*(100/27))+"%";
+                    lbl.style.width = ((c2-c1+1)*(100/27))+"%"; lbl.style.height = "100%";
+                    lbl.onclick = (e) => { 
+                        e.stopPropagation(); 
+                        if(confirm("Smazat " + g.content + "?")) { 
+                            const loader = document.getElementById('loading-overlay');
+                            loader.innerText = "Mažu data..."; loader.style.display = 'flex';
+                            fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "remove", id: g.id }) }); 
+                            setTimeout(() => location.reload(), 1500); 
+                        }
+                    };
+                    document.getElementById('dugout-overlays').appendChild(lbl);
+                }
+            }
         } catch (err) {}
     }
 
