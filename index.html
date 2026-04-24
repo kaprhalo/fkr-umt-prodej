@@ -20,7 +20,7 @@
         .header-sticky { 
             position: sticky; 
             top: 0; 
-            z-index: 600; 
+            z-index: 2000; /* Zvýšeno pro bezpečné překrytí hřiště na mobilech */
             background: #121212; 
             padding: 15px 5px; 
             border-bottom: 2px solid var(--gold); 
@@ -37,9 +37,20 @@
         .sub-title { font-size: 1.2rem; color: var(--gold); margin: 5px 0 5px 0; font-weight: 700; text-transform: uppercase; }
         .action-title { font-size: 0.95rem; color: white; margin: 0 0 12px 0; font-weight: 500; max-width: 600px; line-height: 1.4; }
         
-        .stats { background: #222; padding: 10px 20px; border-radius: 50px; display: inline-flex; gap: 20px; font-size: 0.95rem; border: 1px solid #444; }
+        .stats { background: #222; padding: 10px 20px; border-radius: 50px; display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 20px; font-size: 0.95rem; border: 1px solid #444; }
         .stats span { color: var(--gold); font-weight: bold; }
         #confirm-btn { display: none; background: var(--gold); border: none; padding: 14px 28px; font-weight: bold; border-radius: 8px; margin-top: 10px; cursor: pointer; color: black; font-size: 1rem; z-index: 600; }
+        
+        /* Optimalizace pro mobily - zmenšení hlavičky, aby text nelezl do loga */
+        @media (max-width: 768px) {
+            .header-sticky { grid-template-columns: 60px 1fr 60px; padding: 10px 5px; gap: 5px; }
+            .header-logo-left { height: 45px; margin-left: 5px; transform: translateY(-2px); }
+            .header-logo-right { height: 45px; margin-right: 5px; transform: translateY(-2px); }
+            .main-title { font-size: 1.4rem; }
+            .sub-title { font-size: 1rem; margin: 3px 0; }
+            .action-title { font-size: 0.85rem; margin-bottom: 8px; }
+            .stats { gap: 10px; font-size: 0.85rem; padding: 8px 15px; }
+        }
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { background: #1e1e1e; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid #444; text-align: left; }
@@ -53,16 +64,19 @@
         .btn-save:disabled { background: #555; color: #888; cursor: not-allowed; }
         .btn-cancel { background: #444; color: white; border: none; padding: 12px; border-radius: 5px; flex: 1; cursor: pointer; }
 
-        .scroll-container { width: 100vw; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 0; }
+        /* Definice kontextu pro scroll kontejner */
+        .scroll-container { width: 100vw; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 0; position: relative; z-index: 10; }
         .main-layout { display: inline-grid; grid-template-columns: 35px var(--p-width) 35px; grid-template-rows: 25px var(--p-height) 25px auto; margin: 0 auto; position: relative; }
         
         .col-labels { display: grid; grid-template-columns: repeat(27, 1fr); font-size: 10px; font-weight: bold; color: #888; }
-        .row-labels-left { position: sticky; left: 0; z-index: 60; background: #121212; display: grid; grid-template-rows: repeat(19, 1fr); font-size: 11px; font-weight: bold; color: #888; height: var(--p-height); }
+        
+        /* Z-index zvýšen na 800, aby bezpečně překryl vápna a čáry v mřížce */
+        .row-labels-left { position: sticky; left: 0; z-index: 800; background: #121212; display: grid; grid-template-rows: repeat(19, 1fr); font-size: 11px; font-weight: bold; color: #888; height: var(--p-height); }
         .row-labels-left div { display: flex; align-items: center; justify-content: center; }
 
         .pitch-wrapper { position: relative; background: var(--pitch-green); border: 2px solid white; width: 100%; height: 100%; box-sizing: border-box; overflow: visible; }
         .mid-line-bg::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; background: var(--line-white); transform: translateX(-50%); z-index: 2; pointer-events: none; }
-        .pitch-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 161px; height: 161px; background-image: url('https://fkr1928.github.io/fkr-umt-prodej/MAIN-FKR-LOGO.png'); background-size: cover; z-index: 100; pointer-events: none; border-radius: 50%; }
+        .pitch-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 161px; height: 161px; background-image: url('https://kaprhalo.github.io/fkr-umt-prodej/MAIN-FKR-LOGO.png'); background-size: cover; z-index: 100; pointer-events: none; border-radius: 50%; }
         .center-circle-mark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 161px; height: 161px; border-radius: 50%; border: 3px solid var(--line-white); z-index: 95; pointer-events: none; }
         
         .grid-container { display: grid; grid-template-columns: repeat(27, 1fr); grid-template-rows: repeat(19, 1fr); width: 100%; height: 100%; position: relative; z-index: 10; }
@@ -106,7 +120,6 @@
         .dugout-title.away { left: calc((100% / 27) * 8); width: calc((100% / 27) * 4); text-align: center; }
         .sq-empty { pointer-events: none; }
 
-        /* UPRAVENÁ LEGENDA: podpora více položek a zarovnání vpravo */
         .pitch-legend {
             grid-column: 2;
             justify-self: end;
@@ -163,7 +176,7 @@
 <div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:4000; display:flex; align-items:center; justify-content:center; font-weight:bold; color:var(--gold); flex-direction:column; gap:10px;">Synchronizuji data...</div>
 
 <div class="header-sticky">
-    <img src="https://fkr1928.github.io/fkr-umt-prodej/MAIN-FKR-LOGO.png" alt="FK Řeporyje" class="header-logo-left">
+    <img src="https://kaprhalo.github.io/fkr-umt-prodej/MAIN-FKR-LOGO.png" alt="FK Řeporyje" class="header-logo-left">
     <div class="header-center">
         <h1 class="main-title">FK ŘEPORYJE</h1>
         <h2 class="sub-title">Legenda v každém čtverci</h2>
@@ -175,7 +188,7 @@
         </div>
         <button id="confirm-btn" onclick="openSponsorModal()">POKRAČUJ</button>
     </div>
-    <img src="https://fkr1928.github.io/fkr-umt-prodej/STOVKA-white.png" alt="STOVKA Logo" class="header-logo-right">
+    <img src="https://kaprhalo.github.io/fkr-umt-prodej/STOVKA-white.png" alt="STOVKA Logo" class="header-logo-right">
 </div>
 
 <div id="sponsor-modal" class="modal-overlay">
