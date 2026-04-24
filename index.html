@@ -3,22 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FKŘ UMT - Legenda v každém čtverci</title>
+    <title>FK ŘEPORYJE UMT - Legenda v každém čtverci</title>
     <style>
         :root {
-            --pitch-green: #2e7d32; --center-dark-green: #1b431e; --line-white: rgba(255, 255, 255, 0.95);
+            --pitch-green: #2e7d32; 
+            --pitch-grass-dark: #256328; 
+            --center-dark-green: #1b431e; 
+            --line-white: rgba(255, 255, 255, 0.95);
             --sold-red: #d32f2f; --gold: #ffd700; --premium-orange: #E97132; --large-box-blue: #156082;
-            --selected-yellow: #ffeb3b; --grass-dark-overlay: rgba(0, 0, 0, 0.22); --penalty-red: #cc0000;
-            --p-width: 1100px; --p-height: 620px; --sq-w: calc(1100px / 27); --cell-h: calc(620px / 19);
+            --selected-yellow: #ffeb3b; --penalty-red: #cc0000;
+            --p-width: 1100px; --p-height: 620px; 
+            --sq-w: calc(1100px / 27); --cell-h: calc(620px / 19);
         }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #121212; color: white; text-align: center; margin: 0; padding: 0; overflow-x: hidden; }
         .header-sticky { position: sticky; top: 0; z-index: 600; background: #121212; padding: 15px 5px; border-bottom: 2px solid var(--gold); display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .main-title { font-size: 1.8rem; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        .sub-title { font-size: 1rem; color: #aaa; margin-bottom: 10px; font-style: italic; }
+        .main-title { font-size: 1.8rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 2px; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .sub-title { font-size: 1.2rem; color: var(--gold); margin: 5px 0 10px 0; font-weight: 700; text-transform: uppercase; }
         .stats { background: #222; padding: 10px 20px; border-radius: 50px; display: inline-flex; gap: 20px; font-size: 0.95rem; border: 1px solid #444; }
         .stats span { color: var(--gold); font-weight: bold; }
         #confirm-btn { display: none; background: var(--gold); border: none; padding: 14px 28px; font-weight: bold; border-radius: 8px; margin-top: 10px; cursor: pointer; color: black; font-size: 1rem; z-index: 600; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { background: #1e1e1e; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid #444; text-align: left; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #ccc; }
@@ -29,49 +34,58 @@
         .btn-save { background: var(--gold); color: black; border: none; padding: 12px; border-radius: 5px; flex: 1; font-weight: bold; cursor: pointer; }
         .btn-save:disabled { background: #555; color: #888; cursor: not-allowed; }
         .btn-cancel { background: #444; color: white; border: none; padding: 12px; border-radius: 5px; flex: 1; cursor: pointer; }
+
         .scroll-container { width: 100vw; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 0; }
         .main-layout { display: inline-grid; grid-template-columns: 35px var(--p-width) 35px; grid-template-rows: 25px var(--p-height) 25px; margin: 0 auto; position: relative; }
         .col-labels { display: grid; grid-template-columns: repeat(27, 1fr); font-size: 10px; font-weight: bold; color: #888; }
         .row-labels-left { position: sticky; left: 0; z-index: 60; background: #121212; display: grid; grid-template-rows: repeat(19, 1fr); font-size: 11px; font-weight: bold; color: #888; height: var(--p-height); }
+        .row-labels-left div { display: flex; align-items: center; justify-content: center; }
+
         .pitch-wrapper { position: relative; background: var(--pitch-green); border: 2px solid white; width: 100%; height: 100%; box-sizing: border-box; overflow: visible; }
         .mid-line-bg::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; background: var(--line-white); transform: translateX(-50%); z-index: 2; pointer-events: none; }
         .pitch-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 161px; height: 161px; background-image: url('https://kaprhalo.github.io/fkr-umt-prodej/MAIN-FKR-LOGO.png'); background-size: cover; z-index: 100; pointer-events: none; border-radius: 50%; }
         .center-circle-mark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 161px; height: 161px; border-radius: 50%; border: 3px solid var(--line-white); z-index: 95; pointer-events: none; }
+        
         .grid-container { display: grid; grid-template-columns: repeat(27, 1fr); grid-template-rows: repeat(19, 1fr); width: 100%; height: 100%; position: relative; z-index: 10; }
         .square { border: 0.1px solid rgba(255,255,255,0.08); position: relative; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; cursor: pointer; box-sizing: border-box; }
-        .price-tag { position: relative; z-index: 20; padding: 2px 4px; border-radius: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); pointer-events: none; }
-        .half-sq-hor { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 7px; cursor: pointer; z-index: 25; }
-        .sponsor-label { position: absolute; display: flex; align-items: center; justify-content: center; z-index: 400; font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; border: none; pointer-events: auto !important; background-repeat: no-repeat; background-position: center; background-size: contain; background-color: transparent; }
-        .marking { position: absolute; border: 3px solid var(--line-white); pointer-events: none; z-index: 500; box-sizing: border-box; }
-        .penalty-l { top: 21.05%; left: 0; width: calc(5 * 100% / 27); height: 57.89%; border-left: none; } 
-        .penalty-r { top: 21.05%; right: 0; width: calc(5 * 100% / 27); height: 57.89%; border-right: none; }
-        .goal-l { top: 36.84%; left: 0; width: calc(2 * 100% / 27); height: 26.32%; border-left: none; }
-        .goal-r { top: 36.84%; right: 0; width: calc(2 * 100% / 27); height: 26.32%; border-right: none; }
-        .svg-arc-container { position: absolute; top: calc(var(--cell-h) * 7); width: var(--sq-w); height: calc(var(--cell-h) * 5); z-index: 120; }
-        .svg-arc-container svg { width: 100%; height: 100%; overflow: visible; }
-        .arc-interactive-path { fill: var(--large-box-blue); stroke: var(--line-white); stroke-width: 3; cursor: pointer; transition: fill 0.2s; }
-        .arc-interactive-path.selected { fill: var(--selected-yellow) !important; }
-        .combined-cell { grid-column: span 2; background-color: var(--grass-dark-overlay); z-index: 30; display: flex; align-items: center; justify-content: center; position: relative; }
-        .mask-h-l { clip-path: polygon(100% 0, 100% 100%, 45% 100%, 0 55%, 0 0); }
-        .mask-l-l { clip-path: polygon(100% 0, 100% 100%, 0 100%, 0 45%, 45% 0); }
-        .mask-h-r { clip-path: polygon(0 0, 0 100%, 55% 100%, 100% 55%, 100% 0); }
-        .mask-l-r { clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 45%, 55% 0); }
-        .under-logo-color { background-color: var(--grass-dark-overlay); }
-        .grass-darker { background-color: var(--grass-dark-overlay); }
+        
+        .half-sq-hor { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 7px; cursor: pointer; z-index: 25; border-bottom: 0.1px solid rgba(255,255,255,0.05); }
+        .half-sq-hor:last-child { border-bottom: none; }
+
+        .combined-cell { grid-column: span 2; background-color: var(--center-dark-green) !important; z-index: 30; display: flex; align-items: center; justify-content: center; position: relative; }
+        
+        /* FIX: Zarovnání u loga */
+        .align-left { justify-content: flex-start !important; padding-left: 5px; }
+        .align-right { justify-content: flex-end !important; padding-right: 5px; }
+
+        .under-logo-color, .grass-darker { background-color: var(--pitch-grass-dark); }
         .center-dark-color { background-color: var(--center-dark-green); }
         .orange-premium-color { background-color: var(--premium-orange); }
         .large-box-color { background-color: var(--large-box-blue); }
         .penalty-spot { background-color: var(--penalty-red); }
         .penalty-spot::after { content: ""; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background-color: white; border-radius: 50%; transform: translate(-50%, -50%); z-index: 20; }
         .selected, .half-sq-hor.selected { background-color: var(--selected-yellow) !important; color: black !important; }
+        
+        .marking { position: absolute; border: 3px solid var(--line-white); pointer-events: none; z-index: 500; box-sizing: border-box; }
+        .penalty-l { top: 21.05%; left: 0; width: calc(5 * 100% / 27); height: 57.89%; border-left: none; } 
+        .penalty-r { top: 21.05%; right: 0; width: calc(5 * 100% / 27); height: 57.89%; border-right: none; }
+        .goal-l { top: 36.84%; left: 0; width: calc(2 * 100% / 27); height: 26.32%; border-left: none; }
+        .goal-r { top: 36.84%; right: 0; width: calc(2 * 100% / 27); height: 26.32%; border-right: none; }
+        
+        .svg-arc-container { position: absolute; top: calc(var(--cell-h) * 7); width: var(--sq-w); height: calc(var(--cell-h) * 5); z-index: 120; }
+        .svg-arc-container svg { width: 100%; height: 100%; overflow: visible; }
+        .arc-interactive-path { fill: var(--large-box-blue); stroke: var(--line-white); stroke-width: 3; cursor: pointer; transition: fill 0.2s; }
+        .arc-interactive-path.selected { fill: var(--selected-yellow) !important; }
+
+        .sponsor-label { position: absolute; display: flex; align-items: center; justify-content: center; z-index: 400; font-size: 10px; font-weight: bold; cursor: pointer !important; text-align: center; border: none; background-repeat: no-repeat; background-position: center; background-size: contain; pointer-events: auto !important; }
     </style>
 </head>
 <body>
-<div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; display:flex; align-items:center; justify-content:center; font-weight:bold; color:var(--gold); flex-direction:column; gap:10px;">Synchronizuji data...</div>
+<div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:4000; display:flex; align-items:center; justify-content:center; font-weight:bold; color:var(--gold); flex-direction:column; gap:10px;">Synchronizuji data...</div>
 
 <div class="header-sticky">
-    <h1 class="main-title">FKŘ<br>Legenda v každém čtverci</h1>
-    <div class="sub-title">Pojďme společně podpořit výstavbu nového hřiště pro naše děti!</div>
+    <h1 class="main-title">FK ŘEPORYJE</h1>
+    <h2 class="sub-title">Legenda v každém čtverci</h2>
     <div class="stats">
         <div>Prodáno: <span id="sold-count">0</span></div>
         <div>Vybráno: <span id="money-raised">0</span> Kč</div>
@@ -79,6 +93,7 @@
     </div>
     <button id="confirm-btn" onclick="openSponsorModal()">POKRAČUJ</button>
 </div>
+
 <div id="sponsor-modal" class="modal-overlay">
     <div class="modal-content">
         <h2>Údaje sponzora</h2>
@@ -88,23 +103,44 @@
         <div class="modal-actions"><button class="btn-cancel" onclick="closeSponsorModal()">Zrušit</button><button class="btn-save" id="btn-save-final" onclick="handleSponsorSubmit()" disabled>Uložit</button></div>
     </div>
 </div>
-<div class="scroll-container"><div class="main-layout"><div class="corner"></div><div id="col-labels-top" class="col-labels"></div><div class="corner"></div><div id="row-labels-left" class="row-labels-left"></div><div class="pitch-wrapper">
-    <div class="svg-arc-container" style="left: calc(var(--sq-w) * 5 - 2px);"><svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-l" class="arc-interactive-path" d="M0,0 C60,0 100,50 100,100 C100,150 60,200 0,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg><div id="price-l" class="price-tag-overlay" style="top: calc(var(--cell-h) * 2.5); transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); z-index: 140; width: 100%; text-align: center;">15000</div></div>
-    <div class="svg-arc-container" style="left: calc(var(--sq-w) * 21 - 2px);"><svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-r" class="arc-interactive-path" d="M100,0 C40,0 0,50 0,100 C0,150 40,200 100,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg><div id="price-r" class="price-tag-overlay" style="top: calc(var(--cell-h) * 2.5); transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); z-index: 140; width: 100%; text-align: center;">15000</div></div>
-    <div class="grid-container" id="pitch"></div><div id="sponsor-overlays" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 110;"></div><div class="center-circle-mark"></div><div class="pitch-logo"></div><div class="marking penalty-l"></div><div class="marking penalty-r"></div><div class="marking goal-l"></div><div class="marking goal-r"></div></div></div></div>
+
+<div class="scroll-container">
+    <div class="main-layout">
+        <div class="corner"></div><div id="col-labels-top" class="col-labels"></div><div class="corner"></div>
+        <div id="row-labels-left" class="row-labels-left"></div>
+        <div class="pitch-wrapper">
+            <div class="svg-arc-container" style="left: calc(var(--sq-w) * 5 - 2px);"><svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-l" class="arc-interactive-path" d="M0,0 C60,0 100,50 100,100 C100,150 60,200 0,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg><div id="price-l" class="price-tag-overlay" style="top: 50%; transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); z-index: 140; width: 100%; text-align: center;">15000</div></div>
+            <div class="svg-arc-container" style="left: calc(var(--sq-w) * 21 - 2px);"><svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-r" class="arc-interactive-path" d="M100,0 C40,0 0,50 0,100 C0,150 40,200 100,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg><div id="price-r" class="price-tag-overlay" style="top: 50%; transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: rgba(255,255,255,0.9); z-index: 140; width: 100%; text-align: center;">15000</div></div>
+            <div class="grid-container" id="pitch"></div>
+            <div id="sponsor-overlays" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 110;"></div>
+            <div class="center-circle-mark"></div><div class="pitch-logo"></div><div class="marking penalty-l"></div><div class="marking penalty-r"></div><div class="marking goal-l"></div><div class="marking goal-r"></div>
+        </div>
+    </div>
+</div>
+
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDEvP8sTWyaVDeAinTC5LK39pgaXKK8OYi-eU-e1HNoRjuLpchpEftVHwrBuITOrAE/exec";
     const grid = document.getElementById('pitch'), overlayContainer = document.getElementById('sponsor-overlays');
     let selectedIds = [];
+
     for (let c = 1; c <= 27; c++) document.getElementById('col-labels-top').innerHTML += `<div>${c}</div>`;
     for (let r = 1; r <= 19; r++) document.getElementById('row-labels-left').innerHTML += `<div>${String.fromCharCode(64+r)}</div>`;
+
     for (let r = 1; r <= 19; r++) {
         for (let c = 1; c <= 27; c++) {
             const isArcL = (c === 6) && (r === 8 || r === 12), isArcR = (c === 21) && (r === 8 || r === 12), isCenterBody = (r >= 9 && r <= 11) && (c === 11 || c === 16), isCenterStep = (r === 8 || r === 12) && (c === 12 || c === 15);
+            
             if (isArcL || isArcR || isCenterBody || isCenterStep) {
-                const sq = document.createElement('div'), mask = (isArcL && r===8) ? 'mask-h-l' : (isArcL && r===12) ? 'mask-l-l' : (isArcR && r===8) ? 'mask-h-r' : (isArcR && r===12) ? 'mask-h-r' : 'none';
-                sq.className = `square combined-cell ${mask}`; sq.id = `comb-r${r}c${c}-${c+1}`; sq.dataset.price = 3000; sq.innerHTML = `<span class="price-tag">3000</span>`; sq.onclick = () => toggleSelect(sq); grid.appendChild(sq); c++; continue;
+                const sq = document.createElement('div');
+                // FIX: Specifické zarovnání
+                let specialAlign = "";
+                if ((r === 8 || r === 12) && (c === 12 || c === 15)) { 
+                    if (c === 12) specialAlign = " align-left";
+                    if (c === 15) specialAlign = " align-right";
+                }
+                sq.className = `square combined-cell${specialAlign}`; sq.id = `comb-r${r}c${c}-${c+1}`; sq.dataset.price = 3000; sq.innerHTML = `<span class="price-tag">3000</span>`; sq.onclick = () => toggleSelect(sq); grid.appendChild(sq); c++; continue;
             }
+
             const dx = c - 14, dy = r - 10, dist = Math.sqrt(dx*dx + dy*dy);
             if (dist <= 2.3) { const empty = document.createElement('div'); empty.className = 'square under-logo-color'; empty.style.pointerEvents = 'none'; grid.appendChild(empty); continue; }
             const sq = document.createElement('div'); sq.className = 'square'; sq.id = `r${r}c${c}`;
@@ -125,27 +161,36 @@
                 else { sq.classList.add('grass-darker'); }
                 sq.dataset.price = price;
                 if (price > 0 && !(c === 14 && r >= 8 && r <= 12)) { sq.innerHTML = `<span class="price-tag">${price}</span>`; sq.onclick = () => toggleSelect(sq); }
-                else if (price === 0) sq.style.pointerEvents = 'none';
             } grid.appendChild(sq);
         }
     }
+
     function toggleSelect(el) {
-        const id = el.id, btn = document.getElementById('confirm-btn'), priceL = document.getElementById('price-l'), priceR = document.getElementById('price-r');
-        if (selectedIds.includes(id)) { selectedIds = selectedIds.filter(i => i !== id); el.classList.remove('selected'); if(id === 'arc-merged-l') priceL.style.color = 'rgba(255,255,255,0.9)'; if(id === 'arc-merged-r') priceR.style.color = 'rgba(255,255,255,0.9)'; }
-        else { selectedIds.push(id); el.classList.add('selected'); if(id === 'arc-merged-l') priceL.style.color = 'black'; if(id === 'arc-merged-r') priceR.style.color = 'black'; }
+        const id = el.id, btn = document.getElementById('confirm-btn');
+        const priceTag = (id === 'arc-merged-l') ? document.getElementById('price-l') : (id === 'arc-merged-r') ? document.getElementById('price-r') : null;
+        if (selectedIds.includes(id)) { 
+            selectedIds = selectedIds.filter(i => i !== id); el.classList.remove('selected'); 
+            if(priceTag) priceTag.style.color = 'rgba(255,255,255,0.9)';
+        } else { 
+            selectedIds.push(id); el.classList.add('selected'); 
+            if(priceTag) priceTag.style.color = 'black';
+        }
         btn.style.display = selectedIds.length > 0 ? 'block' : 'none';
         let total = 0; selectedIds.forEach(i => { const e = document.getElementById(i); if(e) total += parseInt(e.dataset.price || 0); });
         document.getElementById('sel-price').innerText = total.toLocaleString();
     }
+
     function convertToHumanCoords(id) {
         if (id.startsWith('arc')) return "D-oblouk";
-        let suffix = id.includes('_T') ? ' (horní)' : id.includes('_B') ? ' (dolní)' : '';
+        let suffix = id.includes('_T') ? ' (h)' : id.includes('_B') ? ' (d)' : '';
         if (id.startsWith('comb')) { const m = id.match(/\d+/g); return String.fromCharCode(64+parseInt(m[0]))+m[1]; }
         const p = id.match(/\d+/g); return p ? String.fromCharCode(64+parseInt(p[0]))+p[1] + suffix : id;
     }
+
     function toggleSaveButton() { document.getElementById('btn-save-final').disabled = !document.getElementById('sponsor-gdpr').checked; }
-    function openSponsorModal() { document.getElementById('sponsor-modal').style.display = 'flex'; document.getElementById('sponsor-gdpr').checked = false; document.getElementById('btn-save-final').disabled = true; }
+    function openSponsorModal() { document.getElementById('sponsor-modal').style.display = 'flex'; }
     function closeSponsorModal() { document.getElementById('sponsor-modal').style.display = 'none'; }
+
     async function handleSponsorSubmit() {
         const name = document.getElementById('sponsor-name').value, fileInput = document.getElementById('sponsor-logo-input');
         if (!name) return alert("Vyplňte jméno.");
@@ -153,6 +198,7 @@
         if (fileInput.files[0]) { const reader = new FileReader(); reader.readAsDataURL(fileInput.files[0]); reader.onload = async () => { await sendToCloud(name, reader.result); }; }
         else { await sendToCloud(name, ""); }
     }
+
     async function sendToCloud(name, base64) {
         try {
             const humanCoords = selectedIds.map(id => convertToHumanCoords(id)).join(", ");
@@ -160,6 +206,7 @@
             setTimeout(() => location.reload(), 1500);
         } catch (e) { alert("Chyba."); document.getElementById('loading-overlay').style.display = 'none'; }
     }
+
     function renderGroup(g) {
         try {
             const els = g.ids.map(id => document.getElementById(id)).filter(e => e); if(!els.length) return;
@@ -172,24 +219,27 @@
                 if(r<r1)r1=r; if(r+h-1>r2)r2=r+h-1; if(c<c1)c1=c; if(c+w-1>c2)c2=c+w-1;
             });
             const lbl = document.createElement('div'); lbl.className = 'sponsor-label';
-            if (g.logo && g.logo.startsWith("data:image")) { lbl.style.backgroundImage = `url(${g.logo})`; lbl.innerText = ""; }
+            let bgColor = "var(--pitch-grass-dark)";
+            if (c1 === 14) bgColor = "var(--center-dark-green)";
+            else if ((c1 <= 5 || c2 >= 23) && (r1 >= 5 && r2 <= 15)) bgColor = "var(--large-box-blue)";
+            if (g.logo && g.logo.startsWith("data:image")) { lbl.style.backgroundImage = `url(${g.logo})`; lbl.style.backgroundColor = bgColor; }
             else { lbl.innerText = g.content; lbl.style.backgroundColor = "var(--sold-red)"; lbl.style.color = "white"; }
             lbl.style.top = ((r1-1)*(100/19))+"%"; lbl.style.left = ((c1-1)*(100/27))+"%";
             lbl.style.width = ((c2-c1+1)*(100/27))+"%"; lbl.style.height = ((r2-r1+1)*(100/19))+"%";
             lbl.onclick = (e) => { 
                 e.stopPropagation(); 
-                if(confirm("Opravdu smazat " + g.content + "?")) { 
-                    lbl.style.display = 'none';
+                if(confirm("Smazat " + g.content + "?")) { 
                     const loader = document.getElementById('loading-overlay');
-                    loader.innerText = "Mažu sponzora a aktualizuji mapu...";
-                    loader.style.display = 'flex'; 
-                    fetch(SCRIPT_URL, {method:"POST", mode:"no-cors", body:JSON.stringify({action:"remove", id:g.id})}); 
-                    setTimeout(() => location.reload(), 1200); 
+                    loader.innerText = "Mažu data...";
+                    loader.style.display = 'flex';
+                    fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "remove", id: g.id }) }); 
+                    setTimeout(() => location.reload(), 1500); 
                 }
             };
             overlayContainer.appendChild(lbl);
-        } catch (err) { console.error("Chyba při vykreslení sponzora:", err); }
+        } catch (err) {}
     }
+
     async function load() {
         try {
             const res = await fetch(SCRIPT_URL); const data = await res.json();
@@ -198,12 +248,7 @@
                 let total = 0; data.forEach(g => g.ids.forEach(id => { const e = document.getElementById(id); if(e) total += parseInt(e.dataset.price || 0); }));
                 document.getElementById('money-raised').innerText = total.toLocaleString(); document.getElementById('sold-count').innerText = data.length;
             }
-        } catch (e) {
-            console.error("Chyba načítání:", e);
-        } finally {
-            // TADY SE TO VYPNE: Až když jsou data načtená a vykreslená
-            document.getElementById('loading-overlay').style.display = 'none';
-        }
+        } catch (e) {} finally { document.getElementById('loading-overlay').style.display = 'none'; }
     }
     window.onload = load;
 </script>
