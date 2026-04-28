@@ -121,7 +121,7 @@
         .arc-interactive-path { fill: var(--large-box-blue); stroke: var(--line-white); stroke-width: 3; cursor: pointer; transition: fill 0.2s; }
         .arc-interactive-path.selected { fill: var(--selected-yellow) !important; }
 
-        .sponsor-label { padding: 10px; background-origin: content-box; box-sizing: border-box;position: absolute; display: flex; align-items: center; justify-content: center; z-index: 400; font-size: 7px; font-weight: bold; cursor: pointer !important; text-align: center; border: none; background-repeat: no-repeat; background-position: center; background-size: contain; pointer-events: auto !important; }
+        .sponsor-label { padding: 4px; background-origin: content-box; box-sizing: border-box; position: absolute; display: flex; align-items: center; justify-content: center; z-index: 400; cursor: pointer !important; text-align: center; border: none; background-repeat: no-repeat; background-position: center; background-size: contain; pointer-events: auto !important; }
 
         .dugout-wrapper { grid-column: 2; position: relative; margin-top: 25px; margin-bottom: 10px; height: calc(var(--p-height) / 19); width: 100%; }
         .dugout-grid { display: grid; grid-template-columns: repeat(27, 1fr); height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 10; }
@@ -267,7 +267,6 @@
 </div>
 
 <script>
-    // SEM VLOŽ URL Z GOOGLE APPS SCRIPTU
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwebu5vTwUrXW8vr2GzWLjJGGIYBFAXZE290N5PJTwWepHZHsYZB0cvseM0vqAhXX1C/exec";
     
     const grid = document.getElementById('pitch'), overlayContainer = document.getElementById('sponsor-overlays');
@@ -427,11 +426,27 @@
                     }
 
                     const lbl = document.createElement('div'); lbl.className = 'sponsor-label';
+                    
                     if (g.logo && g.logo.startsWith("data:image")) { 
                         lbl.style.backgroundImage = `url(${g.logo})`; 
                         lbl.style.backgroundColor = bgColor; 
+                    } else { 
+                        lbl.style.backgroundColor = "var(--sold-red)";
+                        // ROZDĚLENÍ TEXTU DO SVG PRO DOKONALÉ VYPLNĚNÍ
+                        const words = g.content.trim().split(/\s+/);
+                        let tspans = '';
+                        words.forEach((w, i) => {
+                            tspans += `<tspan x="0" dy="${i === 0 ? 0 : 1.1}em">${w}</tspan>`;
+                        });
+                        
+                        lbl.innerHTML = `
+                            <svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="overflow:visible;">
+                                <text text-anchor="middle" fill="white" font-weight="400" font-family="'Segoe UI', Arial, sans-serif" font-size="20">
+                                    ${tspans}
+                                </text>
+                            </svg>
+                        `;
                     }
-                    else { lbl.innerText = g.content; lbl.style.backgroundColor = "var(--sold-red)"; lbl.style.color = "white"; }
                     
                     lbl.style.top = ((r1-1)*(100/19))+"%"; lbl.style.left = ((c1-1)*(100/27))+"%";
                     lbl.style.width = ((c2-c1+1)*(100/27))+"%"; lbl.style.height = ((r2-r1+1)*(100/19))+"%";
@@ -445,6 +460,20 @@
                         }
                     };
                     overlayContainer.appendChild(lbl);
+
+                    // AKTIVACE SVG PŘIZPŮSOBENÍ (Po vložení do hřiště zjistíme přesnou velikost a ořízneme na ni okno)
+                    if (!g.logo || !g.logo.startsWith("data:image")) {
+                        try {
+                            const svg = lbl.querySelector('svg');
+                            const text = svg.querySelector('text');
+                            const bbox = text.getBBox();
+                            if (bbox.width > 0 && bbox.height > 0) {
+                                const padX = bbox.width * 0.05; // 5% vnitřní odsazení
+                                const padY = bbox.height * 0.05;
+                                svg.setAttribute('viewBox', `${bbox.x - padX} ${bbox.y - padY} ${bbox.width + padX*2} ${bbox.height + padY*2}`);
+                            }
+                        } catch (e) {}
+                    }
                 }
             }
 
@@ -457,8 +486,27 @@
                         if(c < c1) c1 = c; if(c > c2) c2 = c;
                     });
                     const lbl = document.createElement('div'); lbl.className = 'sponsor-label';
-                    if (g.logo && g.logo.startsWith("data:image")) { lbl.style.backgroundImage = `url(${g.logo})`; lbl.style.backgroundColor = "var(--center-dark-green)"; }
-                    else { lbl.innerText = g.content; lbl.style.backgroundColor = "var(--sold-red)"; lbl.style.color = "white"; }
+                    
+                    if (g.logo && g.logo.startsWith("data:image")) { 
+                        lbl.style.backgroundImage = `url(${g.logo})`; 
+                        lbl.style.backgroundColor = "var(--center-dark-green)"; 
+                    } else { 
+                        lbl.style.backgroundColor = "var(--sold-red)";
+                        // ROZDĚLENÍ TEXTU DO SVG
+                        const words = g.content.trim().split(/\s+/);
+                        let tspans = '';
+                        words.forEach((w, i) => {
+                            tspans += `<tspan x="0" dy="${i === 0 ? 0 : 1.1}em">${w}</tspan>`;
+                        });
+                        
+                        lbl.innerHTML = `
+                            <svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="overflow:visible;">
+                                <text text-anchor="middle" fill="white" font-weight="400" font-family="'Segoe UI', Arial, sans-serif" font-size="20">
+                                    ${tspans}
+                                </text>
+                            </svg>
+                        `;
+                    }
                     
                     lbl.style.top = "0%"; lbl.style.left = ((c1-1)*(100/27))+"%";
                     lbl.style.width = ((c2-c1+1)*(100/27))+"%"; lbl.style.height = "100%";
@@ -472,6 +520,20 @@
                         }
                     };
                     document.getElementById('dugout-overlays').appendChild(lbl);
+
+                    // AKTIVACE SVG PŘIZPŮSOBENÍ PRO STŘÍDAČKY
+                    if (!g.logo || !g.logo.startsWith("data:image")) {
+                        try {
+                            const svg = lbl.querySelector('svg');
+                            const text = svg.querySelector('text');
+                            const bbox = text.getBBox();
+                            if (bbox.width > 0 && bbox.height > 0) {
+                                const padX = bbox.width * 0.05; 
+                                const padY = bbox.height * 0.05;
+                                svg.setAttribute('viewBox', `${bbox.x - padX} ${bbox.y - padY} ${bbox.width + padX*2} ${bbox.height + padY*2}`);
+                            }
+                        } catch (e) {}
+                    }
                 }
             }
         } catch (err) {}
