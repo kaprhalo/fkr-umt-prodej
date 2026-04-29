@@ -80,7 +80,6 @@
         .main-layout { display: inline-grid; grid-template-columns: 35px var(--p-width) 35px; grid-template-rows: 25px var(--p-height) 25px auto; margin: 0 auto; position: relative; }
         
         .col-labels { display: grid; grid-template-columns: repeat(27, 1fr); font-size: 10px; font-weight: bold; color: #888; }
-        
         .row-labels-left { position: sticky; left: 0; z-index: 800; background: #121212; display: grid; grid-template-rows: repeat(19, 1fr); font-size: 11px; font-weight: bold; color: #888; height: var(--p-height); }
         .row-labels-left div { display: flex; align-items: center; justify-content: center; }
 
@@ -91,14 +90,11 @@
         
         .grid-container { display: grid; grid-template-columns: repeat(27, 1fr); grid-template-rows: repeat(19, 1fr); width: 100%; height: 100%; position: relative; z-index: 10; }
         .square { border: 0.1px solid rgba(255,255,255,0.08); position: relative; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; cursor: pointer; box-sizing: border-box; }
-        
         .price-tag { position: relative; z-index: 20; padding: 2px 4px; border-radius: 2px; text-shadow: 1px 1px 7px rgba(0,0,0,0.8); pointer-events: none; }
         
         .half-sq-hor { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 7px; cursor: pointer; z-index: 25; border-bottom: 0.1px solid rgba(255,255,255,0.05); }
         .half-sq-hor:last-child { border-bottom: none; }
-
         .combined-cell { grid-column: span 2; background-color: var(--center-dark-green) !important; z-index: 30; display: flex; align-items: center; justify-content: center; position: relative; }
-        
         .align-left { justify-content: flex-start !important; padding-left: 5px; }
         .align-right { justify-content: flex-end !important; padding-right: 5px; }
 
@@ -129,57 +125,12 @@
         .dugout-title.home { left: calc((100% / 27) * 15); width: calc((100% / 27) * 4); text-align: center; }
         .dugout-title.away { left: calc((100% / 27) * 8); width: calc((100% / 27) * 4); text-align: center; }
         .sq-empty { pointer-events: none; }
-
-        .pitch-legend {
-            grid-column: 2;
-            justify-self: end;
-            margin-top: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            align-items: flex-end;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 6px 14px;
-            background: #222;
-            border-radius: 8px;
-            border: 1px solid #444;
-            font-size: 11px;
-            color: #bbb;
-            min-width: 220px;
-            justify-content: space-between;
-        }
-        .legend-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .legend-icon-container {
-            position: relative;
-            width: 18px;
-            height: 18px;
-            border-radius: 3px;
-            flex-shrink: 0;
-        }
-        .legend-dot-core {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 4px;
-            height: 4px;
-            background-color: white;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-        }
-        .legend-price {
-            font-weight: bold;
-            color: var(--gold);
-            font-size: 13px;
-            white-space: nowrap;
-        }
+        .pitch-legend { grid-column: 2; justify-self: end; margin-top: 25px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+        .legend-item { display: flex; align-items: center; gap: 12px; padding: 6px 14px; background: #222; border-radius: 8px; border: 1px solid #444; font-size: 11px; color: #bbb; min-width: 220px; justify-content: space-between; }
+        .legend-info { display: flex; align-items: center; gap: 10px; }
+        .legend-icon-container { position: relative; width: 18px; height: 18px; border-radius: 3px; flex-shrink: 0; }
+        .legend-dot-core { position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; background-color: white; border-radius: 50%; transform: translate(-50%, -50%); }
+        .legend-price { font-weight: bold; color: var(--gold); font-size: 13px; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -191,10 +142,8 @@
         <h2 class="sub-title">Legenda v každém čtverci</h2>
         <div class="action-title">Pojďme společně podpořit výstavbu nového hřiště s umělým povrchem a zlepšit tím tréninkové podmínky pro naše děti!</div>
     </div>
-    
     <img src="https://fkr1928.github.io/fkr-umt-prodej/MAIN-FKR-LOGO.png" alt="FK Řeporyje" class="header-logo-left">
     <img src="https://fkr1928.github.io/fkr-umt-prodej/STOVKA-white.png" alt="STOVKA Logo" class="header-logo-right">
-    
     <div class="header-stats">
         <div class="stats">
             <div>Dárců: <span id="sold-count">0</span></div>
@@ -213,8 +162,8 @@
             <input type="text" id="sponsor-name" placeholder="Zadejte název">
         </div>
         <div class="form-group">
-            <label>E-mail (neveřejný)</label>
-            <input type="email" id="sponsor-email" placeholder="Zadejte e-mail pro komunikaci">
+            <label>E-mail (povinný, neveřejný)</label>
+            <input type="email" id="sponsor-email" placeholder="Zadejte e-mail pro komunikaci" required>
         </div>
         <div class="form-group">
             <label>Nahrát logo</label>
@@ -236,65 +185,44 @@
             <div id="sponsor-overlays" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 110;"></div>
             <div class="center-circle-mark"></div><div class="pitch-logo"></div><div class="marking penalty-l"></div><div class="marking penalty-r"></div><div class="marking goal-l"></div><div class="marking goal-r"></div>
         </div>
-        
         <div class="dugout-wrapper" id="dugout-wrapper">
             <div class="dugout-title away">Hosté</div>
             <div class="dugout-title home">Domácí</div>
             <div class="dugout-grid" id="dugout-grid"></div>
             <div id="dugout-overlays" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 110;"></div>
         </div>
-        
         <div class="pitch-legend">
-            <div class="legend-item">
-                <div class="legend-info">
-                    <div class="legend-icon-container" style="background-color: var(--penalty-red);">
-                        <div class="legend-dot-core"></div>
-                    </div>
-                    <div class="legend-label">Penalta</div>
-                </div>
-                <div class="legend-price">30 000 Kč</div>
-            </div>
-            <div class="legend-item">
-                <div class="legend-info">
-                    <div class="legend-icon-container" style="background-color: var(--center-dark-green); border: 2px solid var(--line-white); border-radius: 50%;">
-                    </div>
-                    <div class="legend-label">Středový kruh</div>
-                </div>
-                <div class="legend-price">50 000 Kč</div>
-            </div>
+            <div class="legend-item"><div class="legend-info"><div class="legend-icon-container" style="background-color: var(--penalty-red);"><div class="legend-dot-core"></div></div><div class="legend-label">Penalta</div></div><div class="legend-price">30 000 Kč</div></div>
+            <div class="legend-item"><div class="legend-info"><div class="legend-icon-container" style="background-color: var(--center-dark-green); border: 2px solid var(--line-white); border-radius: 50%;"></div><div class="legend-label">Středový kruh</div></div><div class="legend-price">50 000 Kč</div></div>
         </div>
     </div>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwebu5vTwUrXW8vr2GzWLjJGGIYBFAXZE290N5PJTwWepHZHsYZB0cvseM0vqAhXX1C/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzsllJRN9szJvcbO9qjC_vC2EUtYD16CqYZnwDqNw74pZSeyYCmzc62GXngiUfNV3gD/exec";
     
     const grid = document.getElementById('pitch'), overlayContainer = document.getElementById('sponsor-overlays');
     let selectedIds = [];
 
+    // Generování hřiště
     for (let c = 1; c <= 27; c++) document.getElementById('col-labels-top').innerHTML += `<div>${c}</div>`;
     for (let r = 1; r <= 19; r++) document.getElementById('row-labels-left').innerHTML += `<div>${String.fromCharCode(64+r)}</div>`;
 
     for (let r = 1; r <= 19; r++) {
         for (let c = 1; c <= 27; c++) {
             const isArcL = (c === 6) && (r === 8 || r === 12), isArcR = (c === 21) && (r === 8 || r === 12), isCenterBody = (r >= 9 && r <= 11) && (c === 11 || c === 16), isCenterStep = (r === 8 || r === 12) && (c === 12 || c === 15);
-            
             if (isArcL || isArcR || isCenterBody || isCenterStep) {
                 const sq = document.createElement('div');
                 let specialAlign = "";
                 if ((r === 8 || r === 12) && (c === 12 || c === 15)) { 
-                    if (c === 12) specialAlign = " align-left";
-                    if (c === 15) specialAlign = " align-right";
+                    if (c === 12) specialAlign = " align-left"; if (c === 15) specialAlign = " align-right";
                 }
                 sq.className = `square combined-cell${specialAlign}`; sq.id = `comb-r${r}c${c}-${c+1}`; sq.dataset.price = 3000; sq.innerHTML = `<span class="price-tag">3000</span>`; sq.onclick = () => toggleSelect(sq); grid.appendChild(sq); c++; continue;
             }
-
             const dx = c - 14, dy = r - 10, dist = Math.sqrt(dx*dx + dy*dy);
             if (dist <= 2.3) { const empty = document.createElement('div'); empty.className = 'square under-logo-color'; empty.style.pointerEvents = 'none'; grid.appendChild(empty); continue; }
-            
             const sq = document.createElement('div'); sq.className = 'square'; sq.id = `r${r}c${c}`;
             const isColumnN = (c === 14), isSplitRow = ((r >= 1 && r <= 4) || (r >= 16 && r <= 19)) && !isColumnN;
-
             if (r === 10 && (c === 4 || c === 24)) { sq.classList.add('penalty-spot'); sq.dataset.price = 30000; sq.onclick = () => toggleSelect(sq); }
             else if ((r === 1 || r === 19) && (c === 1 || c === 27)) { sq.classList.add('orange-premium-color'); sq.dataset.price = 5000; sq.innerHTML = `<span class="price-tag">5000</span>`; sq.onclick = () => toggleSelect(sq); }
             else if (isSplitRow) {
@@ -309,8 +237,7 @@
                 else if ((c <= 2 || c >= 26) && (r >= 8 && r <= 12)) { price = 5000; sq.classList.add('orange-premium-color'); }
                 else if ((c <= 5 || c >= 23) && (r >= 5 && r <= 15)) { price = 4000; sq.classList.add('large-box-color'); }
                 else { sq.classList.add('grass-darker'); }
-                sq.dataset.price = price;
-                if (price > 0 && !(c === 14 && r >= 8 && r <= 12)) { sq.innerHTML = `<span class="price-tag">${price}</span>`; sq.onclick = () => toggleSelect(sq); }
+                sq.dataset.price = price; if (price > 0 && !(c === 14 && r >= 8 && r <= 12)) { sq.innerHTML = `<span class="price-tag">${price}</span>`; sq.onclick = () => toggleSelect(sq); }
             } grid.appendChild(sq);
         }
     }
@@ -319,25 +246,14 @@
     for (let c = 1; c <= 27; c++) {
         const isDugout = (c >= 9 && c <= 12) || (c >= 16 && c <= 19);
         if (isDugout) {
-            const sq = document.createElement('div');
-            sq.className = 'square center-dark-color';
-            sq.id = `rXc${c}`; sq.dataset.price = 3000; sq.innerHTML = `<span class="price-tag">3000</span>`; sq.onclick = () => toggleSelect(sq); 
-            dugoutGrid.appendChild(sq);
-        } else {
-            const empty = document.createElement('div'); empty.className = 'sq-empty'; dugoutGrid.appendChild(empty);
-        }
+            const sq = document.createElement('div'); sq.className = 'square center-dark-color'; sq.id = `rXc${c}`; sq.dataset.price = 3000; sq.innerHTML = `<span class="price-tag">3000</span>`; sq.onclick = () => toggleSelect(sq); dugoutGrid.appendChild(sq);
+        } else { const empty = document.createElement('div'); empty.className = 'sq-empty'; dugoutGrid.appendChild(empty); }
     }
 
     function toggleSelect(el) {
         const id = el.id, btn = document.getElementById('confirm-btn');
-        const priceTag = (id === 'arc-merged-l') ? document.getElementById('price-l') : (id === 'arc-merged-r') ? document.getElementById('price-r') : null;
-        if (selectedIds.includes(id)) { 
-            selectedIds = selectedIds.filter(i => i !== id); el.classList.remove('selected'); 
-            if(priceTag) priceTag.style.color = 'white';
-        } else { 
-            selectedIds.push(id); el.classList.add('selected'); 
-            if(priceTag) priceTag.style.color = 'black';
-        }
+        if (selectedIds.includes(id)) { selectedIds = selectedIds.filter(i => i !== id); el.classList.remove('selected'); }
+        else { selectedIds.push(id); el.classList.add('selected'); }
         btn.style.display = selectedIds.length > 0 ? 'block' : 'none';
         let total = 0; selectedIds.forEach(i => { const e = document.getElementById(i); if(e) total += parseInt(e.dataset.price || 0); });
         document.getElementById('sel-price').innerText = total.toLocaleString();
@@ -356,37 +272,33 @@
     function closeSponsorModal() { document.getElementById('sponsor-modal').style.display = 'none'; }
 
     async function handleSponsorSubmit() {
-        const name = document.getElementById('sponsor-name').value;
-        const email = document.getElementById('sponsor-email').value;
+        const name = document.getElementById('sponsor-name').value.trim();
+        const email = document.getElementById('sponsor-email').value.trim();
         const fileInput = document.getElementById('sponsor-logo-input');
-        if (!name) return alert("Vyplňte jméno.");
-        document.getElementById('loading-overlay').style.display = 'flex';
+        if (!name || !email || !email.includes('@')) return alert("Vyplňte prosím platné jméno a e-mail.");
         
+        // VÝPOČET CELKOVÉ CENY PRO CLOUD A TABULKU
+        let totalPrice = 0;
+        selectedIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) totalPrice += parseInt(el.dataset.price || 0);
+        });
+
+        document.getElementById('loading-overlay').style.display = 'flex';
         if (fileInput.files[0]) { 
-            const reader = new FileReader(); 
-            reader.readAsDataURL(fileInput.files[0]); 
-            reader.onload = async () => { await sendToCloud(name, email, reader.result); }; 
-        } else { 
-            await sendToCloud(name, email, ""); 
-        }
+            const reader = new FileReader(); reader.readAsDataURL(fileInput.files[0]); 
+            reader.onload = async () => { await sendToCloud(name, email, reader.result, totalPrice); }; 
+        } else { await sendToCloud(name, email, "", totalPrice); }
     }
 
-    async function sendToCloud(name, email, base64) {
+    async function sendToCloud(name, email, base64, price) {
         try {
             const humanCoords = selectedIds.map(id => convertToHumanCoords(id)).join(", ");
             await fetch(SCRIPT_URL, { 
-                method: "POST", 
-                mode: "no-cors", 
+                method: "POST", mode: "no-cors", 
                 body: JSON.stringify({ 
                     action: "add", 
-                    data: { 
-                        id: Date.now(), 
-                        content: name, 
-                        email: email, 
-                        logo: base64, 
-                        ids: [...selectedIds], 
-                        humanIds: humanCoords 
-                    }
+                    data: { id: Date.now(), content: name, email: email, logo: base64, ids: [...selectedIds], humanIds: humanCoords, price: price }
                 })
             });
             setTimeout(() => location.reload(), 1500);
@@ -432,13 +344,12 @@
                         lbl.style.backgroundColor = bgColor; 
                     } else { 
                         lbl.style.backgroundColor = "var(--sold-red)";
-                        // ROZDĚLENÍ TEXTU DO SVG PRO DOKONALÉ VYPLNĚNÍ
+                        // SVG TEXT
                         const words = g.content.trim().split(/\s+/);
                         let tspans = '';
                         words.forEach((w, i) => {
                             tspans += `<tspan x="0" dy="${i === 0 ? 0 : 1.1}em">${w}</tspan>`;
                         });
-                        
                         lbl.innerHTML = `
                             <svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="overflow:visible;">
                                 <text text-anchor="middle" fill="white" font-weight="400" font-family="'Segoe UI', Arial, sans-serif" font-size="20">
@@ -461,14 +372,13 @@
                     };
                     overlayContainer.appendChild(lbl);
 
-                    // AKTIVACE SVG PŘIZPŮSOBENÍ (Po vložení do hřiště zjistíme přesnou velikost a ořízneme na ni okno)
                     if (!g.logo || !g.logo.startsWith("data:image")) {
                         try {
                             const svg = lbl.querySelector('svg');
                             const text = svg.querySelector('text');
                             const bbox = text.getBBox();
                             if (bbox.width > 0 && bbox.height > 0) {
-                                const padX = bbox.width * 0.05; // 5% vnitřní odsazení
+                                const padX = bbox.width * 0.05; 
                                 const padY = bbox.height * 0.05;
                                 svg.setAttribute('viewBox', `${bbox.x - padX} ${bbox.y - padY} ${bbox.width + padX*2} ${bbox.height + padY*2}`);
                             }
@@ -492,13 +402,11 @@
                         lbl.style.backgroundColor = "var(--center-dark-green)"; 
                     } else { 
                         lbl.style.backgroundColor = "var(--sold-red)";
-                        // ROZDĚLENÍ TEXTU DO SVG
                         const words = g.content.trim().split(/\s+/);
                         let tspans = '';
                         words.forEach((w, i) => {
                             tspans += `<tspan x="0" dy="${i === 0 ? 0 : 1.1}em">${w}</tspan>`;
                         });
-                        
                         lbl.innerHTML = `
                             <svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="overflow:visible;">
                                 <text text-anchor="middle" fill="white" font-weight="400" font-family="'Segoe UI', Arial, sans-serif" font-size="20">
@@ -521,7 +429,6 @@
                     };
                     document.getElementById('dugout-overlays').appendChild(lbl);
 
-                    // AKTIVACE SVG PŘIZPŮSOBENÍ PRO STŘÍDAČKY
                     if (!g.logo || !g.logo.startsWith("data:image")) {
                         try {
                             const svg = lbl.querySelector('svg');
@@ -543,9 +450,24 @@
         try {
             const res = await fetch(SCRIPT_URL); const data = await res.json();
             if (data && Array.isArray(data)) {
-                data.forEach(g => { renderGroup(g); g.ids.forEach(id => { const el = document.getElementById(id); if(el) { el.style.visibility = 'hidden'; if(el.id === 'arc-merged-l') document.getElementById('price-l').style.visibility = 'hidden'; if(el.id === 'arc-merged-r') document.getElementById('price-r').style.visibility = 'hidden'; } }); });
-                let total = 0; data.forEach(g => g.ids.forEach(id => { const e = document.getElementById(id); if(e) total += parseInt(e.dataset.price || 0); }));
-                document.getElementById('money-raised').innerText = total.toLocaleString(); document.getElementById('sold-count').innerText = data.length;
+                let grandTotal = 0;
+                data.forEach(g => {
+                    renderGroup(g);
+                    let displayPrice = g.price || 0;
+                    if (!displayPrice) {
+                        g.ids.forEach(id => {
+                            const el = document.getElementById(id);
+                            if (el) displayPrice += parseInt(el.dataset.price || 0);
+                        });
+                    }
+                    grandTotal += displayPrice;
+                    g.ids.forEach(id => { 
+                        const el = document.getElementById(id); 
+                        if(el) { el.style.visibility = 'hidden'; if(el.id === 'arc-merged-l') document.getElementById('price-l').style.visibility = 'hidden'; if(el.id === 'arc-merged-r') document.getElementById('price-r').style.visibility = 'hidden'; }
+                    });
+                });
+                document.getElementById('money-raised').innerText = grandTotal.toLocaleString();
+                document.getElementById('sold-count').innerText = data.length;
             }
         } catch (e) {} finally { document.getElementById('loading-overlay').style.display = 'none'; }
     }
