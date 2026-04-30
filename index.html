@@ -117,7 +117,7 @@
         .arc-interactive-path { fill: var(--large-box-blue); stroke: var(--line-white); stroke-width: 3; cursor: pointer; transition: fill 0.2s; }
         .arc-interactive-path.selected { fill: var(--selected-yellow) !important; }
 
-        .sponsor-label { padding: 4px; background-origin: content-box; box-sizing: border-box; position: absolute; display: flex; align-items: center; justify-content: center; z-index: 400; cursor: pointer !important; text-align: center; border: none; background-repeat: no-repeat; background-position: center; background-size: contain; pointer-events: auto !important; }
+        .sponsor-label { padding: 4px; background-origin: content-box; box-sizing: border-box; position: absolute; display: flex; align-items: center; justify-content: center; z-index: 400; cursor: pointer !important; text-align: center; border: none; pointer-events: auto !important; }
 
         .dugout-wrapper { grid-column: 2; position: relative; margin-top: 25px; margin-bottom: 10px; height: calc(var(--p-height) / 19); width: 100%; }
         .dugout-grid { display: grid; grid-template-columns: repeat(27, 1fr); height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 10; }
@@ -154,6 +154,7 @@
     </div>
 </div>
 
+<!-- Modal -->
 <div id="sponsor-modal" class="modal-overlay">
     <div class="modal-content">
         <h2>Údaje sponzora</h2>
@@ -182,6 +183,7 @@
             <div class="svg-arc-container" style="left: calc(var(--sq-w) * 5 - 2px);"><svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-l" class="arc-interactive-path" d="M0,0 C60,0 100,50 100,100 C100,150 60,200 0,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg><div id="price-l" class="price-tag" style="top: 50%; transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: white; z-index: 140; width: 100%; text-align: center;">15000</div></div>
             <div class="svg-arc-container" style="left: calc(var(--sq-w) * 21 - 2px);"><svg viewBox="0 0 100 200" preserveAspectRatio="none"><path id="arc-merged-r" class="arc-interactive-path" d="M100,0 C40,0 0,50 0,100 C0,150 40,200 100,200 Z" onclick="toggleSelect(this)" data-price="15000"></path></svg><div id="price-r" class="price-tag" style="top: 50%; transform: translateY(-50%); left: 0; position: absolute; pointer-events: none; font-size: 9px; font-weight: bold; color: white; z-index: 140; width: 100%; text-align: center;">15000</div></div>
             <div class="grid-container" id="pitch"></div>
+            <!-- Z-INDEX 200 -->
             <div id="sponsor-overlays" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 200;"></div>
             <div class="center-circle-mark"></div><div class="pitch-logo"></div><div class="marking penalty-l"></div><div class="marking penalty-r"></div><div class="marking goal-l"></div><div class="marking goal-r"></div>
         </div>
@@ -189,6 +191,7 @@
             <div class="dugout-title away">Hosté</div>
             <div class="dugout-title home">Domácí</div>
             <div class="dugout-grid" id="dugout-grid"></div>
+            <!-- Z-INDEX 200 -->
             <div id="dugout-overlays" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 200;"></div>
         </div>
         <div class="pitch-legend">
@@ -322,30 +325,18 @@
                     });
                     
                     const firstEl = els[0];
-                    const isArc = firstEl.id.startsWith('arc'); // Zjištění, zda jde o D-oblouk
-                    let bgColor = "var(--pitch-grass-dark)";
-                    
-                    if (firstEl.classList.contains('center-dark-color') || firstEl.classList.contains('combined-cell')) {
-                        bgColor = "var(--center-dark-green)";
-                    } else if (firstEl.classList.contains('large-box-color') || isArc) {
-                        bgColor = "var(--large-box-blue)";
-                    } else if (firstEl.classList.contains('orange-premium-color')) {
-                        bgColor = "var(--premium-orange)";
-                    } else if (firstEl.id.includes('_T') || firstEl.id.includes('_B')) {
-                        bgColor = "var(--pitch-green)";
-                    } else if (firstEl.classList.contains('penalty-spot')) {
-                        bgColor = "var(--penalty-red)";
-                    }
+                    const isArc = firstEl.id.startsWith('arc'); 
 
                     const lbl = document.createElement('div'); lbl.className = 'sponsor-label';
                     
+                    // ZDE JE GRADIENT ZAPNUTÝ VŽDY (pokud to není arc)
+                    lbl.style.background = isArc ? "transparent" : "linear-gradient(135deg, var(--center-dark-green) 0%, var(--pitch-green) 100%)";
+                    
                     if (g.logo && g.logo.startsWith("data:image")) { 
-                        lbl.style.backgroundImage = `url(${g.logo})`; 
-                        // Pokud je to oblouk, průhledné pozadí, jinak standardní
-                        lbl.style.backgroundColor = isArc ? "transparent" : bgColor; 
+                        // Logo se vloží jako img element, pod kterým prosvítá nastavený gradient
+                        lbl.innerHTML = `<img src="${g.logo}" style="max-width:100%; max-height:100%; object-fit:contain; pointer-events:none;">`;
                     } else { 
-                        // Pokud je to oblouk s textem, neděláme červený obdélník, ale průhledný
-                        lbl.style.backgroundColor = isArc ? "transparent" : "var(--sold-red)";
+                        // Bez loga se vloží SVG text
                         const words = g.content.trim().split(/\s+/);
                         let tspans = '';
                         words.forEach((w, i) => {
@@ -398,11 +389,14 @@
                     });
                     const lbl = document.createElement('div'); lbl.className = 'sponsor-label';
                     
+                    // ZDE JE GRADIENT ZAPNUTÝ VŽDY PRO STŘÍDAČKU
+                    lbl.style.background = "linear-gradient(135deg, var(--center-dark-green) 0%, var(--pitch-green) 100%)";
+                    
                     if (g.logo && g.logo.startsWith("data:image")) { 
-                        lbl.style.backgroundImage = `url(${g.logo})`; 
-                        lbl.style.backgroundColor = "var(--center-dark-green)"; 
+                        // Logo jako img element s gradientem na pozadí
+                        lbl.innerHTML = `<img src="${g.logo}" style="max-width:100%; max-height:100%; object-fit:contain; pointer-events:none;">`;
                     } else { 
-                        lbl.style.backgroundColor = "var(--sold-red)";
+                        // Text bez loga
                         const words = g.content.trim().split(/\s+/);
                         let tspans = '';
                         words.forEach((w, i) => {
@@ -463,14 +457,13 @@
                     }
                     grandTotal += displayPrice;
                     
-                    // ZMĚNA: U D-oblouku nebudeme schovávat celé SVG, ale jen změníme jeho výplň
                     g.ids.forEach(id => { 
                         const el = document.getElementById(id); 
                         if(el) { 
                             if (id.startsWith('arc')) {
-                                // Obarvení samotného SVG path na správnou barvu
-                                el.style.fill = (g.logo && g.logo.startsWith("data:image")) ? "var(--large-box-blue)" : "var(--sold-red)";
-                                el.style.pointerEvents = "none"; // ať kliknutí propadne na label
+                                // TMAVĚ ZELENÁ PRO D-OBLOUK VŽDY (s logem i textem)
+                                el.style.fill = "var(--center-dark-green)";
+                                el.style.pointerEvents = "none"; 
                                 if(id === 'arc-merged-l') document.getElementById('price-l').style.visibility = 'hidden'; 
                                 if(id === 'arc-merged-r') document.getElementById('price-r').style.visibility = 'hidden'; 
                             } else {
