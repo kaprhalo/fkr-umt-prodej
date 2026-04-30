@@ -170,7 +170,10 @@
             <label>Nahrát logo</label>
             <input type="file" id="sponsor-logo-input" accept="image/*">
         </div>
-        <label class="checkbox-group"><input type="checkbox" id="sponsor-gdpr" onchange="toggleSaveButton()"><span>Souhlasím s podmínkami a se zpracováním osobních údajů.</span></label>
+        <label class="checkbox-group">
+            <input type="checkbox" id="sponsor-gdpr" onchange="toggleSaveButton()">
+            <span>Souhlasím s <a href="https://www.fkreporyje.cz/cs/p/306-legenda-v-kazdem-ctverci" target="_blank" style="color: var(--gold); text-decoration: underline;">podmínkami akce</a> a se zpracováním osobních údajů.</span>
+        </label>
         <div class="modal-actions"><button class="btn-cancel" onclick="closeSponsorModal()">Zrušit</button><button class="btn-save" id="btn-save-final" onclick="handleSponsorSubmit()" disabled>Uložit</button></div>
     </div>
 </div>
@@ -329,14 +332,11 @@
 
                     const lbl = document.createElement('div'); lbl.className = 'sponsor-label';
                     
-                    // ZDE JE GRADIENT ZAPNUTÝ VŽDY (pokud to není arc)
                     lbl.style.background = isArc ? "transparent" : "linear-gradient(135deg, var(--center-dark-green) 0%, var(--pitch-green) 100%)";
                     
                     if (g.logo && g.logo.startsWith("data:image")) { 
-                        // Logo se vloží jako img element, pod kterým prosvítá nastavený gradient
                         lbl.innerHTML = `<img src="${g.logo}" style="max-width:100%; max-height:100%; object-fit:contain; pointer-events:none;">`;
                     } else { 
-                        // Bez loga se vloží SVG text
                         const words = g.content.trim().split(/\s+/);
                         let tspans = '';
                         words.forEach((w, i) => {
@@ -344,7 +344,7 @@
                         });
                         lbl.innerHTML = `
                             <svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="overflow:visible;">
-                                <text text-anchor="middle" fill="white" font-weight="400" font-family="'Segoe UI', Arial, sans-serif" font-size="20">
+                                <text text-anchor="middle" dominant-baseline="middle" fill="white" font-weight="400" font-family="'Segoe UI', Arial, sans-serif" font-size="25">
                                     ${tspans}
                                 </text>
                             </svg>
@@ -370,8 +370,9 @@
                             const text = svg.querySelector('text');
                             const bbox = text.getBBox();
                             if (bbox.width > 0 && bbox.height > 0) {
-                                const padX = bbox.width * 0.05; 
-                                const padY = bbox.height * 0.05;
+                                // ZMENŠENÁ OCHRANNÁ ZÓNA NA 1 % PRO MAXIMALIZACI TEXTU
+                                const padX = bbox.width * 0.01; 
+                                const padY = bbox.height * 0.01;
                                 svg.setAttribute('viewBox', `${bbox.x - padX} ${bbox.y - padY} ${bbox.width + padX*2} ${bbox.height + padY*2}`);
                             }
                         } catch (e) {}
@@ -389,14 +390,11 @@
                     });
                     const lbl = document.createElement('div'); lbl.className = 'sponsor-label';
                     
-                    // ZDE JE GRADIENT ZAPNUTÝ VŽDY PRO STŘÍDAČKU
                     lbl.style.background = "linear-gradient(135deg, var(--center-dark-green) 0%, var(--pitch-green) 100%)";
                     
                     if (g.logo && g.logo.startsWith("data:image")) { 
-                        // Logo jako img element s gradientem na pozadí
                         lbl.innerHTML = `<img src="${g.logo}" style="max-width:100%; max-height:100%; object-fit:contain; pointer-events:none;">`;
                     } else { 
-                        // Text bez loga
                         const words = g.content.trim().split(/\s+/);
                         let tspans = '';
                         words.forEach((w, i) => {
@@ -404,7 +402,7 @@
                         });
                         lbl.innerHTML = `
                             <svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="overflow:visible;">
-                                <text text-anchor="middle" fill="white" font-weight="400" font-family="'Segoe UI', Arial, sans-serif" font-size="20">
+                                <text text-anchor="middle" dominant-baseline="middle" fill="white" font-weight="400" font-family="'Segoe UI', Arial, sans-serif" font-size="20">
                                     ${tspans}
                                 </text>
                             </svg>
@@ -430,8 +428,9 @@
                             const text = svg.querySelector('text');
                             const bbox = text.getBBox();
                             if (bbox.width > 0 && bbox.height > 0) {
-                                const padX = bbox.width * 0.05; 
-                                const padY = bbox.height * 0.05;
+                                // ZMENŠENÁ OCHRANNÁ ZÓNA NA 1 % PRO MAXIMALIZACI TEXTU
+                                const padX = bbox.width * 0.01; 
+                                const padY = bbox.height * 0.01;
                                 svg.setAttribute('viewBox', `${bbox.x - padX} ${bbox.y - padY} ${bbox.width + padX*2} ${bbox.height + padY*2}`);
                             }
                         } catch (e) {}
@@ -461,7 +460,6 @@
                         const el = document.getElementById(id); 
                         if(el) { 
                             if (id.startsWith('arc')) {
-                                // TMAVĚ ZELENÁ PRO D-OBLOUK VŽDY (s logem i textem)
                                 el.style.fill = "var(--center-dark-green)";
                                 el.style.pointerEvents = "none"; 
                                 if(id === 'arc-merged-l') document.getElementById('price-l').style.visibility = 'hidden'; 
