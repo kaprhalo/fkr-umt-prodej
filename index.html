@@ -148,6 +148,7 @@
         <div class="stats">
             <div>Dárců: <span id="sold-count">0</span></div>
             <div>Vybráno: <span id="money-raised">0</span> Kč</div>
+            <div>Zbývá: <span id="percent-left">100</span> %</div>
             <div>Výběr: <span id="sel-price">0</span> Kč</div>
         </div>
         <button id="confirm-btn" onclick="openSponsorModal()">POKRAČUJ</button>
@@ -370,7 +371,6 @@
                             const text = svg.querySelector('text');
                             const bbox = text.getBBox();
                             if (bbox.width > 0 && bbox.height > 0) {
-                                // ZMENŠENÁ OCHRANNÁ ZÓNA NA 1 % PRO MAXIMALIZACI TEXTU
                                 const padX = bbox.width * 0.01; 
                                 const padY = bbox.height * 0.01;
                                 svg.setAttribute('viewBox', `${bbox.x - padX} ${bbox.y - padY} ${bbox.width + padX*2} ${bbox.height + padY*2}`);
@@ -428,7 +428,6 @@
                             const text = svg.querySelector('text');
                             const bbox = text.getBBox();
                             if (bbox.width > 0 && bbox.height > 0) {
-                                // ZMENŠENÁ OCHRANNÁ ZÓNA NA 1 % PRO MAXIMALIZACI TEXTU
                                 const padX = bbox.width * 0.01; 
                                 const padY = bbox.height * 0.01;
                                 svg.setAttribute('viewBox', `${bbox.x - padX} ${bbox.y - padY} ${bbox.width + padX*2} ${bbox.height + padY*2}`);
@@ -442,6 +441,12 @@
 
     async function load() {
         try {
+            // Spočítáme maximální možnou částku za celé hřiště a střídačky
+            let totalPossible = 0;
+            document.querySelectorAll('[data-price]').forEach(el => {
+                totalPossible += parseInt(el.dataset.price || 0);
+            });
+
             const res = await fetch(SCRIPT_URL); const data = await res.json();
             if (data && Array.isArray(data)) {
                 let grandTotal = 0;
@@ -472,6 +477,13 @@
                 });
                 document.getElementById('money-raised').innerText = grandTotal.toLocaleString();
                 document.getElementById('sold-count').innerText = data.length;
+                
+                // Vypočítáme zbývající procenta
+                let percentLeft = 100;
+                if (totalPossible > 0) {
+                    percentLeft = Math.max(0, ((totalPossible - grandTotal) / totalPossible) * 100);
+                }
+                document.getElementById('percent-left').innerText = percentLeft.toFixed(1).replace('.', ',');
             }
         } catch (e) {} finally { document.getElementById('loading-overlay').style.display = 'none'; }
     }
